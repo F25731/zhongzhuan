@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>云逸</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: rgba(255,255,255,.96);
+      --text: #0f172a;
+      --muted: #5b6474;
+      --line: #e2e8f0;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --cyan: #0891b2;
+      --cyan-soft: #ecfeff;
+      --green: #0f9f63;
+      --green-soft: #ecfdf5;
+      --amber: #c2410c;
+      --amber-soft: #fff7ed;
+      --shadow: 0 20px 50px rgba(15, 23, 42, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,.10), transparent 28%),
+        radial-gradient(circle at left bottom, rgba(8,145,178,.08), transparent 30%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--blue-soft), #ffffff);
+      color: var(--blue);
+      border: 1px solid #cfe0ff;
+      font-weight: 800;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .navlinks { display: flex; gap: 8px; flex-wrap: wrap; }
+    .navlinks a {
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+    .navlinks a:hover { color: var(--text); background: #f8fafc; }
+
+    .notice {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      background: var(--amber-soft);
+      color: #9a3412;
+      line-height: 1.7;
+      font-size: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .notice strong { color: #7c2d12; }
+    .notice-mark {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #f97316;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .intro,
+    .importer,
+    .section,
+    .buy-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .intro {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .kicker {
+      width: fit-content;
+      padding: 5px 11px;
+      margin-bottom: 16px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4.1vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .intro p {
+      margin: 14px 0 0;
+      max-width: 650px;
+      color: var(--muted);
+      line-height: 1.78;
+      font-size: 16px;
+    }
+
+    .hero-points {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .hero-points div {
+      padding: 12px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .importer { padding: 24px; }
+    .importer h2, .section h2, .buy-card h2 { margin: 0 0 14px; font-size: 22px; }
+    .importer p, .buy-card p, .section-intro, .buy-list li, .step p { color: var(--muted); line-height: 1.75; font-size: 14px; }
+
+    label {
+      display: block;
+      margin: 14px 0 8px;
+      color: #293241;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      height: 46px;
+      padding: 0 12px;
+      border: 1px solid #cdd5e1;
+      border-radius: 8px;
+      outline: none;
+      font-size: 15px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button,
+    .link-button,
+    .buy-button {
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    button { background: #0f172a; }
+    button.codex { background: var(--blue); }
+    .link-button { margin-top: 16px; padding: 0 16px; background: var(--blue); }
+    button:hover, .link-button:hover, .buy-button:hover { filter: brightness(.97); }
+
+    .status {
+      min-height: 44px;
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f4f7fb;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      word-break: break-word;
+      border: 1px solid #e8edf4;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .section, .buy-card { padding: 24px; }
+    .steps { display: grid; gap: 12px; }
+    .step {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr);
+      gap: 10px;
+      align-items: flex-start;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfcfe;
+    }
+
+    .num {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .step h3 { margin: 0 0 5px; font-size: 16px; }
+    .note, .ok {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .note { background: var(--amber-soft); color: #9a3412; border-left: 3px solid #f97316; }
+    .ok { background: var(--green-soft); color: #0f6b43; border-left: 3px solid var(--green); }
+
+    .buy-card {
+      background: linear-gradient(180deg, rgba(37,99,235,.04), rgba(255,255,255,.96)), #fff;
+    }
+
+    .buy-tag {
+      width: fit-content;
+      padding: 4px 10px;
+      margin-bottom: 12px;
+      border-radius: 999px;
+      background: var(--cyan-soft);
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .buy-list { margin: 12px 0 0 18px; padding: 0; }
+    .buy-button {
+      width: fit-content;
+      margin-top: 16px;
+      padding: 0 16px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      box-shadow: 0 10px 24px rgba(37,99,235,.18);
+    }
+
+    code {
+      padding: 1px 5px;
+      border-radius: 5px;
+      background: #eef2f7;
+      color: #111827;
+      font-family: Consolas, monospace;
+      font-size: .92em;
+    }
+
+    @media (max-width: 900px) {
+      .hero, .grid, .hero-points { grid-template-columns: 1fr; }
+      .buttons { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark">云</div>
+        <div>
+          <div id="brandName">云逸</div>
+          <small id="siteDomain">yunyi.hstudy.xyz</small>
+        </div>
+      </div>
+      <div class="navlinks">
+        <a href="/">首页</a>
+        <a href="/tutorial">教程</a>
+      </div>
+    </div>
+
+    <div class="notice">
+      <div class="notice-mark">!</div>
+      <div><strong>公告：</strong><span id="announcement">导入前请先安装 CC-Switch。卡密会在你的浏览器本地生成导入链接并写入本机 CC-Switch；导入后如未生效，请在 CC-Switch 中手动激活对应通道。</span></div>
+    </div>
+
+    <div class="hero">
+      <section class="intro">
+        <div class="kicker" id="heroKicker">云逸 Claude / Codex 通道</div>
+        <h1>输入卡密，一键导入到 CC-Switch</h1>
+        <p>支持 Claude 和 Codex 两类通道。导入后，客户端、VS Code 和终端 CLI 都可以直接使用，不需要手动填写复杂配置。</p>
+        <div class="hero-points">
+          <div>本地导入，不需要手动填 endpoint</div>
+          <div>支持 Claude 与 Codex 两种通道</div>
+          <div>导入后可用于客户端、VS Code、终端</div>
+        </div>
+      </section>
+
+      <section class="importer">
+        <h2>一键导入</h2>
+        <p>输入卡密后选择通道，浏览器会唤起本机 CC-Switch 并导入配置。</p>
+        <label for="apiKey">卡密 / API Key</label>
+        <input id="apiKey" autocomplete="off" placeholder="请输入你的卡密">
+        <div class="buttons">
+          <button type="button" onclick="deploy('claude')">导入 Claude</button>
+          <button type="button" class="codex" onclick="deploy('codex')">导入 Codex</button>
+        </div>
+        <div class="status" id="status">点击按钮后，浏览器会询问是否打开 CC-Switch。</div>
+        <div class="ok">如果你已经安装并打开过 CC-Switch，通常点一次允许就会自动写入对应 provider。</div>
+      </section>
+    </div>
+
+    <div class="grid">
+      <section class="section">
+        <h2>使用说明</h2>
+        <p class="section-intro">第一次使用的用户，建议按这个顺序操作，基本不会出错。</p>
+        <div class="steps">
+          <div class="step">
+            <div class="num">1</div>
+            <div><h3>先安装 Node.js、Git、CC-Switch</h3><p>这三个装好以后，客户端、VS Code 和 CLI 才能稳定工作。</p></div>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <div><h3>回到首页输入卡密</h3><p>Claude 用户选择 <code>导入 Claude</code>，Codex 用户选择 <code>导入 Codex</code>。</p></div>
+          </div>
+          <div class="step">
+            <div class="num">3</div>
+            <div><h3>在 CC-Switch 里确认并激活</h3><p>导入后确认新通道已经出现，并确保当前通道已经激活。</p></div>
+          </div>
+          <div class="step">
+            <div class="num">4</div>
+            <div><h3>按照教程安装 CLI</h3><p>如果你要在终端里用，再去教程页按 Claude Code 或 Codex 的步骤安装对应 CLI。</p></div>
+          </div>
+        </div>
+        <div class="note">详细环境安装、CLI 部署和 VS Code 使用方式，请进入教程页查看。</div>
+        <a class="link-button" href="/tutorial">打开教程</a>
+      </section>
+
+      <section class="buy-card">
+        <div class="buy-tag">购买入口</div>
+        <h2>购买卡密</h2>
+        <p>如果你还没有卡密，可以先进入购买页面下单。下单后回到首页输入卡密，一键导入到 CC-Switch 即可开始使用。</p>
+        <ul class="buy-list">
+          <li>购买后回到本站首页输入卡密导入</li>
+          <li>支持 Claude 和 Codex 两类通道</li>
+          <li>导入完成后可在客户端、VS Code、终端里使用</li>
+        </ul>
+        <a class="buy-button" id="buyButton" href="https://pay.ldxp.cn/shop/Q5L5OORI" target="_blank" rel="noopener">立即购买卡密</a>
+        <div class="ok">同时提供软件下载和教程页面，适合直接放到服务器上线。</div>
+        <a class="link-button" id="downloadButton" href="#" style="display:none;background:var(--green);">下载 CC-Switch</a>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    let siteSettings = {
+      brandName: '云逸',
+      siteDomain: 'yunyi.hstudy.xyz',
+      announcement: '导入前请先安装 CC-Switch。卡密会在你的浏览器本地生成导入链接并写入本机 CC-Switch；导入后如未生效，请在 CC-Switch 中手动激活对应通道。',
+      buyUrl: 'https://pay.ldxp.cn/shop/Q5L5OORI',
+      downloadLabel: '下载 CC-Switch',
+      downloadUrl: '',
+      claudeName: '云逸Claude',
+      claudeEndpoint: 'https://yunyi.cfd/claude',
+      codexName: '云逸Codex',
+      codexEndpoint: 'https://yunyi.cfd/codex'
+    };
+
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/site-settings');
+        const data = await res.json();
+        if (data && data.settings) {
+          siteSettings = { ...siteSettings, ...data.settings };
+        }
+      } catch {}
+
+      document.title = `${siteSettings.brandName} | Claude / Codex 一键导入`;
+      document.getElementById('brandName').textContent = siteSettings.brandName;
+      document.getElementById('siteDomain').textContent = siteSettings.siteDomain;
+      document.getElementById('announcement').textContent = siteSettings.announcement;
+      document.getElementById('heroKicker').textContent = `${siteSettings.brandName} Claude / Codex 通道`;
+
+      const buyButton = document.getElementById('buyButton');
+      buyButton.href = siteSettings.buyUrl || '#';
+
+      const downloadButton = document.getElementById('downloadButton');
+      if (siteSettings.downloadUrl) {
+        downloadButton.href = siteSettings.downloadUrl;
+        downloadButton.textContent = siteSettings.downloadLabel || '下载 CC-Switch';
+        downloadButton.style.display = 'inline-flex';
+      }
+    }
+
+    function deploy(type) {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const status = document.getElementById('status');
+      if (!apiKey) {
+        status.textContent = '请先输入卡密。';
+        return;
+      }
+
+      const config = type === 'claude'
+        ? { app: 'claude', name: siteSettings.claudeName, endpoint: siteSettings.claudeEndpoint }
+        : { app: 'codex', name: siteSettings.codexName, endpoint: siteSettings.codexEndpoint };
+
+      const params = new URLSearchParams({
+        resource: 'provider',
+        app: config.app,
+        enabled: 'true',
+        name: config.name,
+        apiKey,
+        endpoint: config.endpoint
+      });
+
+      const url = `ccswitch://v1/import?${params.toString()}`;
+      status.textContent = `正在唤起 CC-Switch：${url.replace(/apiKey=([^&]+)/, 'apiKey=[已打码]')}`;
+      window.location.href = url;
+    }
+
+    loadSettings();
+  </script>
+</body>
+</html>

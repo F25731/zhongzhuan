@@ -1,0 +1,6 @@
+data/*
+!data/.gitkeep
+!data/downloads/
+!data/downloads/**
+__pycache__/
+*.pyc

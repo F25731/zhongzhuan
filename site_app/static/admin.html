@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>云逸后台</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --green: #0f9f63;
+      --green-soft: #ecfdf5;
+      --shadow: 0 18px 40px rgba(15, 23, 42, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(980px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .login {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 18px;
+      background: #fbfdff;
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid #cdd5e1;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      padding: 12px 14px;
+      outline: none;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      height: 42px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .tip {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.7;
+      background: var(--blue-soft);
+      color: #1d4ed8;
+    }
+
+    .ok {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-left: 3px solid var(--green);
+      border-radius: 0 8px 8px 0;
+      background: var(--green-soft);
+      color: #0f6b43;
+      font-size: 13px;
+      line-height: 1.7;
+      min-height: 42px;
+    }
+
+    @media (max-width: 860px) {
+      .login, .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel">
+      <div class="head">
+        <div>
+          <h1>云逸后台</h1>
+          <div class="muted">这里只做你当前需要的功能：公告、购买卡密地址、品牌名、下载包和导入配置。部署后，你只需要记住后台账号密码即可修改前台内容。</div>
+        </div>
+      </div>
+
+      <div class="login">
+        <input id="adminUser" placeholder="后台用户名" value="admin">
+        <input id="adminPass" type="password" placeholder="后台密码">
+        <input id="siteDomainView" placeholder="站点域名预览" disabled>
+        <button class="secondary" type="button" onclick="loadSettings()">登录并加载</button>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>站点信息</h2>
+          <label>品牌名<input id="brandName" placeholder="如：云逸"></label>
+          <label>站点域名<input id="siteDomain" placeholder="如：yunyi.hstudy.xyz"></label>
+          <label>公告<textarea id="announcement" placeholder="首页公告内容"></textarea></label>
+          <label>购买卡密地址<input id="buyUrl" placeholder="购买地址"></label>
+        </div>
+
+        <div class="card">
+          <h2>下载与导入配置</h2>
+          <label>下载按钮文案<input id="downloadLabel" placeholder="如：下载 CC-Switch"></label>
+          <label>Claude 显示名称<input id="claudeName" placeholder="如：云逸Claude"></label>
+          <label>Claude API 地址<input id="claudeEndpoint" placeholder="https://yunyi.cfd/claude"></label>
+          <label>Codex 显示名称<input id="codexName" placeholder="如：云逸Codex"></label>
+          <label>Codex API 地址<input id="codexEndpoint" placeholder="https://yunyi.cfd/codex"></label>
+          <label>上传 CC-Switch 安装包<input id="downloadFile" type="file"></label>
+          <div class="tip">上传新安装包后，首页和教程页的下载按钮会自动指向最新文件。</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="button" onclick="saveSettings()">保存配置</button>
+        <button class="secondary" type="button" onclick="uploadPackage()">上传安装包</button>
+      </div>
+
+      <div class="ok" id="status">先输入后台用户名和密码，再点击“登录并加载”。</div>
+    </section>
+  </main>
+
+  <script>
+    function authHeader() {
+      const user = document.getElementById('adminUser').value.trim();
+      const pass = document.getElementById('adminPass').value;
+      return 'Basic ' + btoa(`${user}:${pass}`);
+    }
+
+    async function adminFetch(url, options = {}) {
+      const headers = new Headers(options.headers || {});
+      headers.set('Authorization', authHeader());
+      if (options.body && !(options.body instanceof FormData)) {
+        headers.set('Content-Type', 'application/json');
+      }
+      const response = await fetch(url, { ...options, headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP ${response.status}`);
+      }
+      return response.json();
+    }
+
+    function fill(settings) {
+      document.getElementById('brandName').value = settings.brandName || '';
+      document.getElementById('siteDomain').value = settings.siteDomain || '';
+      document.getElementById('siteDomainView').value = settings.siteDomain || '';
+      document.getElementById('announcement').value = settings.announcement || '';
+      document.getElementById('buyUrl').value = settings.buyUrl || '';
+      document.getElementById('downloadLabel').value = settings.downloadLabel || '';
+      document.getElementById('claudeName').value = settings.claudeName || '';
+      document.getElementById('claudeEndpoint').value = settings.claudeEndpoint || '';
+      document.getElementById('codexName').value = settings.codexName || '';
+      document.getElementById('codexEndpoint').value = settings.codexEndpoint || '';
+    }
+
+    async function loadSettings() {
+      const status = document.getElementById('status');
+      status.textContent = '正在加载配置...';
+      try {
+        const data = await adminFetch('/api/admin/site-settings');
+        fill(data.settings || {});
+        status.textContent = '配置已加载。';
+      } catch (err) {
+        status.textContent = `加载失败：${err.message}`;
+      }
+    }
+
+    async function saveSettings() {
+      const status = document.getElementById('status');
+      status.textContent = '正在保存配置...';
+      try {
+        const payload = {
+          brandName: document.getElementById('brandName').value.trim(),
+          siteDomain: document.getElementById('siteDomain').value.trim(),
+          announcement: document.getElementById('announcement').value.trim(),
+          buyUrl: document.getElementById('buyUrl').value.trim(),
+          downloadLabel: document.getElementById('downloadLabel').value.trim(),
+          claudeName: document.getElementById('claudeName').value.trim(),
+          claudeEndpoint: document.getElementById('claudeEndpoint').value.trim(),
+          codexName: document.getElementById('codexName').value.trim(),
+          codexEndpoint: document.getElementById('codexEndpoint').value.trim()
+        };
+        const data = await adminFetch('/api/admin/site-settings', {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+        fill(data.settings || {});
+        status.textContent = '配置已保存。';
+      } catch (err) {
+        status.textContent = `保存失败：${err.message}`;
+      }
+    }
+
+    async function uploadPackage() {
+      const status = document.getElementById('status');
+      const file = document.getElementById('downloadFile').files[0];
+      if (!file) {
+        status.textContent = '请先选择一个安装包文件。';
+        return;
+      }
+      status.textContent = '正在上传安装包...';
+      try {
+        const form = new FormData();
+        form.append('file', file);
+        const data = await adminFetch('/api/admin/download-package', {
+          method: 'POST',
+          body: form
+        });
+        fill(data.settings || {});
+        status.textContent = '安装包已上传，前台下载按钮已自动更新。';
+      } catch (err) {
+        status.textContent = `上传失败：${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+services:
+  site:
+    build: ./site_app
+    container_name: yunyi-site
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      SITE_DB_PATH: /app/data/site.db
+      SITE_UPLOAD_DIR: /app/data/uploads
+      SITE_DOWNLOAD_DIR: /app/data/downloads
+      SITE_ENABLE_SIDEWORK_SYNC: "false"
+      SITE_ADMIN_USER: ${SITE_ADMIN_USER:-admin}
+      SITE_ADMIN_PASSWORD: ${SITE_ADMIN_PASSWORD:-change-me}
+    volumes:
+      - ./site_app/data:/app/data

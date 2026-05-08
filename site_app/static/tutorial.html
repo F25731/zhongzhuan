@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>云逸 | Claude / Codex 教程</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #101828;
+      --muted: #5d6675;
+      --line: #e3e8f1;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --green: #0f9f63;
+      --green-soft: #ecfdf5;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --shadow: 0 14px 34px rgba(15, 23, 42, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(1080px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.92);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .bolt {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 7px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-weight: 800;
+    }
+
+    .navlinks {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .navlinks a {
+      padding: 8px 12px;
+      border-radius: 7px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .navlinks a.active {
+      color: var(--blue);
+      background: var(--blue-soft);
+      border-color: #bfd4ff;
+    }
+
+    .hero, .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 18px;
+    }
+
+    .kicker {
+      width: fit-content;
+      padding: 4px 10px;
+      margin-bottom: 14px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      max-width: 780px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-left: 3px solid #f59e0b;
+      border-radius: 0 7px 7px 0;
+      background: var(--amber-soft);
+      color: #92400e;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .jump-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .jump-links a, .download-btn {
+      padding: 10px 14px;
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .download-btn {
+      background: var(--green);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .section-intro {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 15px;
+    }
+
+    .grid-3, .grid-2 {
+      display: grid;
+      gap: 14px;
+    }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card, .step, .tool-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .card, .tool-card { padding: 18px; }
+    .card h3, .tool-card h3 { margin: 0 0 8px; font-size: 18px; }
+    .card p, .tool-card p, .step p, .step li { margin: 0; color: var(--muted); line-height: 1.75; font-size: 14px; }
+
+    .card-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .card-links a, .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary { color: #fff; background: var(--blue); }
+    .secondary { color: var(--text); background: #fff; border: 1px solid var(--line); }
+
+    .steps { display: grid; gap: 12px; }
+    .step {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .num {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .step h3 { margin: 0 0 6px; font-size: 17px; }
+    .step ul, .muted-list { margin: 8px 0 0 18px; padding: 0; }
+
+    .note, .ok {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 7px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .note { background: var(--amber-soft); color: #92400e; border-left: 3px solid #f59e0b; }
+    .ok { background: var(--green-soft); color: #0f6b43; border-left: 3px solid var(--green); }
+
+    .code {
+      display: block;
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #d7e2f2;
+      font-family: Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    code {
+      padding: 1px 5px;
+      border-radius: 5px;
+      background: #eef2f7;
+      color: #111827;
+      font-family: Consolas, monospace;
+      font-size: .92em;
+    }
+
+    @media (max-width: 900px) {
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand"><div class="bolt">云</div><span id="brandTitle">云逸教程</span></div>
+      <div class="navlinks">
+        <a href="/">首页导入</a>
+        <a href="/tutorial" class="active">教程</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="kicker" id="heroKicker">云逸 · Node.js + Git + CC-Switch</div>
+      <h1>先装环境，再一键导入，最后用 Claude Code 或 Codex</h1>
+      <p id="heroDesc">这是云逸的简化教程页，对外入口是 yunyi.hstudy.xyz。流程只保留最需要的部分：先安装 Node.js、Git、CC-Switch，然后从首页一键导入通道。导入并激活成功后，客户端、VS Code 和终端 CLI 都可以用。</p>
+      <div class="notice"><strong>说明：</strong>如果你已经装好了 Node.js 和 Git，可以直接跳到“导入到 CC-Switch”。如果 VS Code 已经开着，导入完成后建议重开一次窗口或终端。</div>
+      <div class="jump-links">
+        <a href="#prepare">先装环境</a>
+        <a href="#import">导入到 CC-Switch</a>
+        <a href="#claude">Claude Code 教程</a>
+        <a href="#codex">Codex 教程</a>
+        <a class="download-btn" id="downloadBtn" href="#" style="display:none;">下载 CC-Switch</a>
+      </div>
+    </section>
+
+    <section class="section" id="prepare">
+      <h2>一、先装这 3 个</h2>
+      <p class="section-intro">你的网站教程不用讲复杂原理，先把环境装好就行。大多数用户只要这三样：Node.js、Git、CC-Switch。</p>
+      <div class="grid-3">
+        <div class="card">
+          <h3>1. 安装 Node.js</h3>
+          <p>推荐安装 Node.js LTS 版本。安装完成后，终端里能运行 <code>node -v</code> 和 <code>npm -v</code> 就可以。</p>
+          <div class="card-links"><a class="cta primary" href="https://nodejs.org/zh-cn" target="_blank" rel="noopener">下载 Node.js</a></div>
+          <div class="ok">装完后打开新的终端窗口，输入 <code>node -v</code> 检查是否安装成功。</div>
+        </div>
+        <div class="card">
+          <h3>2. 安装 Git</h3>
+          <p>Git 主要给 Claude Code 和 Codex 在本地项目里工作时用。安装完成后，终端里能运行 <code>git --version</code> 就行。</p>
+          <div class="card-links"><a class="cta primary" href="https://git-scm.com/download/win" target="_blank" rel="noopener">下载 Git</a></div>
+          <div class="ok">如果你是 Windows 用户，安装过程一路默认下一步基本就够用。</div>
+        </div>
+        <div class="card">
+          <h3>3. 安装 CC-Switch</h3>
+          <p>CC-Switch 是本地通道管理工具。你需要先装好它，后面首页的一键导入才会弹起并写入 provider 配置。</p>
+          <div class="card-links"><a class="cta secondary" id="downloadBtnCard" href="#" style="display:none;">下载 CC-Switch</a></div>
+          <div class="note">后台上传新的安装包后，这里的下载按钮会自动更新，不需要再手动改教程页。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="import">
+      <h2>二、从首页一键导入到 CC-Switch</h2>
+      <p class="section-intro">环境装好以后，客户只需要回到首页，输入卡密，选择 Claude 或 Codex 导入即可。</p>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><div><h3>打开首页导入页</h3><p>回到网站首页，进入卡密导入页面，输入你发给客户的卡密。</p><div class="card-links" style="margin-top:10px;"><a class="cta primary" href="/">打开首页导入</a></div></div></div>
+        <div class="step"><div class="num">2</div><div><h3>选择要导入的类型</h3><p>Claude 用户点 <code>导入 Claude</code>，Codex 用户点 <code>导入 Codex</code>。浏览器弹出“是否打开 CC-Switch”时，选择允许。</p></div></div>
+        <div class="step"><div class="num">3</div><div><h3>在 CC-Switch 里确认并激活</h3><p>导入成功后，回到 CC-Switch，确认已经出现新 provider。如果没有当前使用标识，手动点一下激活。</p><ul><li>导入成功：能看到新通道</li><li>激活成功：当前通道高亮或显示正在使用</li></ul></div></div>
+        <div class="step"><div class="num">4</div><div><h3>客户端和 VS Code 都可以用</h3><p>只要 CC-Switch 已经导入并激活成功，客户端和 VS Code 里就都可以直接走这条通道，不需要再单独手填 key 和 endpoint。</p><div class="ok">如果 VS Code 在导入前就已经开着，建议重开一次 VS Code 或者至少新开一个终端窗口。</div></div></div>
+      </div>
+    </section>
+
+    <section class="section" id="claude">
+      <h2>三、Claude Code 教程</h2>
+      <p class="section-intro">这部分只讲最短路径：安装 CLI、验证命令、在终端里启动。前提是你已经完成上面的环境安装和 CC-Switch 导入。</p>
+      <div class="grid-2">
+        <div class="tool-card"><h3>终端里安装 Claude Code CLI</h3><p>打开 PowerShell 或 Windows Terminal，执行下面这条命令：</p><span class="code">npm install -g @anthropic-ai/claude-code</span><p style="margin-top:10px;">安装完成后，执行：</p><span class="code">claude --version</span><div class="ok">如果能看到版本号，说明 Claude Code CLI 已经装好了。</div></div>
+        <div class="tool-card"><h3>怎么开始用</h3><p>进入你的项目目录后，直接运行：</p><span class="code">claude</span><p style="margin-top:10px;">如果你已经在 CC-Switch 里导入并激活了 Claude 通道，CLI 会直接走这条通道。</p><ul class="muted-list"><li>客户端：直接打开就能用</li><li>VS Code：重开窗口后使用 Claude Code / 相关扩展即可</li><li>终端：在项目目录运行 <code>claude</code></li></ul></div>
+      </div>
+      <div class="note">如果终端提示找不到 <code>claude</code> 命令，通常是 Node.js 没装好，或者装完后没有重开终端。</div>
+    </section>
+
+    <section class="section" id="codex">
+      <h2>四、Codex 教程</h2>
+      <p class="section-intro">Codex 这边同样只保留你真正需要告诉用户的步骤：安装 CLI、验证命令、开始使用。</p>
+      <div class="grid-2">
+        <div class="tool-card"><h3>终端里安装 Codex CLI</h3><p>打开 PowerShell 或 Windows Terminal，执行下面这条命令：</p><span class="code">npm install -g @openai/codex</span><p style="margin-top:10px;">安装完成后，执行：</p><span class="code">codex --version</span><div class="ok">如果能看到版本号，说明 Codex CLI 已经装好了。</div></div>
+        <div class="tool-card"><h3>怎么开始用</h3><p>进入你的项目目录后，直接运行：</p><span class="code">codex</span><p style="margin-top:10px;">如果你已经在 CC-Switch 里导入并激活了 Codex 通道，CLI 会直接走这条通道。</p><ul class="muted-list"><li>客户端：导入后直接可用</li><li>VS Code：重开窗口后使用 Codex / 对应插件即可</li><li>终端：在项目目录运行 <code>codex</code></li></ul></div>
+      </div>
+      <div class="note">如果终端提示找不到 <code>codex</code> 命令，先检查 <code>node -v</code>、<code>npm -v</code> 是否正常，再重开一个终端。</div>
+    </section>
+
+    <section class="section">
+      <h2>五、最常见的两个问题</h2>
+      <div class="steps">
+        <div class="step"><div class="num">Q1</div><div><h3>导入成功了，但终端还是不能用</h3><p>先确认三件事：</p><ul><li>Node.js 已装好，<code>node -v</code> 能出版本号</li><li>CLI 已装好，<code>claude --version</code> 或 <code>codex --version</code> 能出版本号</li><li>CC-Switch 里对应通道已经激活</li></ul></div></div>
+        <div class="step"><div class="num">Q2</div><div><h3>VS Code 里没生效</h3><p>最常见的原因是 VS Code 在导入前就开着。直接重开 VS Code，或者至少新开一个终端窗口，再试一次。</p></div></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/site-settings');
+        const data = await res.json();
+        const settings = data.settings || {};
+        const brand = settings.brandName || '云逸';
+        const domain = settings.siteDomain || 'yunyi.hstudy.xyz';
+        document.title = `${brand} | Claude / Codex 教程`;
+        document.getElementById('brandTitle').textContent = `${brand}教程`;
+        document.getElementById('heroKicker').textContent = `${brand} · Node.js + Git + CC-Switch`;
+        document.getElementById('heroDesc').innerHTML = `这是 <strong>${brand}</strong> 的简化教程页，对外入口是 <strong>${domain}</strong>。流程只保留最需要的部分：先安装 <strong>Node.js</strong>、<strong>Git</strong>、<strong>CC-Switch</strong>，然后从首页一键导入通道。导入并激活成功后，客户端、VS Code 和终端 CLI 都可以用。`;
+        const downloadUrl = settings.downloadUrl || '';
+        const downloadLabel = settings.downloadLabel || '下载 CC-Switch';
+        const btns = [document.getElementById('downloadBtn'), document.getElementById('downloadBtnCard')];
+        if (downloadUrl) {
+          btns.forEach((btn) => {
+            btn.href = downloadUrl;
+            btn.textContent = downloadLabel;
+            btn.style.display = 'inline-flex';
+          });
+        }
+      } catch {}
+    }
+    loadSettings();
+  </script>
+</body>
+</html>
