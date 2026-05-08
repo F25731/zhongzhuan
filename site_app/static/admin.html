@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
   <title>云逸后台</title>
   <style>
     :root {
@@ -49,6 +50,21 @@
       margin-bottom: 18px;
       padding-bottom: 16px;
       border-bottom: 1px solid var(--line);
+    }
+
+    .head-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .head-logo {
+      width: 40px;
+      height: 40px;
+      display: block;
+      flex: 0 0 auto;
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(37, 99, 235, .18);
     }
 
     h1 {
@@ -177,9 +193,12 @@
   <main class="shell">
     <section class="panel">
       <div class="head">
-        <div>
-          <h1>云逸后台</h1>
-          <div class="muted">这里只做你当前需要的功能：公告、购买卡密地址、品牌名、下载包和导入配置。部署后，你只需要记住后台账号密码即可修改前台内容。</div>
+        <div class="head-brand">
+          <img class="head-logo" src="/static/assets/yunyi-logo.svg" alt="云逸">
+          <div>
+            <h1>云逸后台</h1>
+            <div class="muted">这里只做你当前需要的功能：公告、购买卡密地址、品牌名、下载包和导入配置。部署后，你只需要记住后台账号密码即可修改前台内容。</div>
+          </div>
         </div>
       </div>
 

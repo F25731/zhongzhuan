@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
   <title>云逸 | Claude / Codex 教程</title>
   <style>
     :root {
@@ -57,15 +58,13 @@
       color: var(--text);
     }
 
-    .bolt {
-      width: 28px;
-      height: 28px;
-      display: grid;
-      place-items: center;
-      border-radius: 7px;
-      background: var(--blue-soft);
-      color: var(--blue);
-      font-weight: 800;
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      display: block;
+      flex: 0 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, .16);
     }
 
     .navlinks {
@@ -286,7 +285,7 @@
 <body>
   <main class="shell">
     <div class="topbar">
-      <div class="brand"><div class="bolt">云</div><span id="brandTitle">云逸教程</span></div>
+      <div class="brand"><img class="brand-logo" src="/static/assets/yunyi-logo.svg" alt="云逸"><span id="brandTitle">云逸教程</span></div>
       <div class="navlinks">
         <a href="/">首页导入</a>
         <a href="/tutorial" class="active">教程</a>

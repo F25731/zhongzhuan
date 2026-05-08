@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
   <title>云逸</title>
   <style>
     :root {
@@ -63,16 +64,13 @@
       color: var(--text);
     }
 
-    .brand-mark {
-      width: 30px;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      border-radius: 9px;
-      background: linear-gradient(135deg, var(--blue-soft), #ffffff);
-      color: var(--blue);
-      border: 1px solid #cfe0ff;
-      font-weight: 800;
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      display: block;
+      flex: 0 0 auto;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, .18);
     }
 
     .brand small {
@@ -349,7 +347,7 @@
   <main class="shell">
     <div class="topbar">
       <div class="brand">
-        <div class="brand-mark">云</div>
+        <img class="brand-logo" src="/static/assets/yunyi-logo.svg" alt="云逸">
         <div>
           <div id="brandName">云逸</div>
           <small id="siteDomain">yunyi.hstudy.xyz</small>
