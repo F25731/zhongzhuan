@@ -10,7 +10,7 @@ services:
       SITE_UPLOAD_DIR: /app/data/uploads
       SITE_DOWNLOAD_DIR: /app/data/downloads
       SITE_ENABLE_SIDEWORK_SYNC: "false"
-      SITE_ADMIN_USER: ${SITE_ADMIN_USER:-admin}
+      SITE_ADMIN_USER: ${SITE_ADMIN_USER:-fyanxv}
       SITE_ADMIN_PASSWORD: ${SITE_ADMIN_PASSWORD:-change-me}
     volumes:
       - ./site_app/data:/app/data

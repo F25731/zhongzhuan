@@ -34,7 +34,7 @@ UPLOAD_DIR = Path(os.getenv("SITE_UPLOAD_DIR", APP_DIR / "data" / "uploads"))
 DOWNLOAD_DIR = Path(os.getenv("SITE_DOWNLOAD_DIR", APP_DIR / "data" / "downloads"))
 BEIJING_TZ = ZoneInfo("Asia/Shanghai")
 ENABLE_SIDEWORK_SYNC = os.getenv("SITE_ENABLE_SIDEWORK_SYNC", "false").lower() in {"1", "true", "yes", "on"}
-ADMIN_USER = os.getenv("SITE_ADMIN_USER", "admin")
+ADMIN_USER = os.getenv("SITE_ADMIN_USER", "fyanxv")
 ADMIN_PASSWORD = os.getenv("SITE_ADMIN_PASSWORD", "change-me")
 security = HTTPBasic()
 
@@ -430,7 +430,7 @@ async def index() -> FileResponse:
     return FileResponse(APP_DIR / "static" / "index.html")
 
 
-@app.get("/admin")
+@app.get("/fyanxv")
 async def admin() -> FileResponse:
     return FileResponse(APP_DIR / "static" / "admin.html")
 

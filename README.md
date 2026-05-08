@@ -23,7 +23,7 @@
 
 - 前台首页：`/`
 - 教程页：`/tutorial`
-- 后台：`/admin`
+- 后台：`/fyanxv`
 - 站点后端：`site_app/`
 
 ## 默认配置
@@ -57,14 +57,14 @@ docker compose up -d --build
 
 - `http://服务器IP:8000/`
 - `http://服务器IP:8000/tutorial`
-- `http://服务器IP:8000/admin`
+- `http://服务器IP:8000/fyanxv`
 
 ## 后台账号密码
 
 通过环境变量设置：
 
 ```yaml
-SITE_ADMIN_USER: admin
+SITE_ADMIN_USER: fyanxv
 SITE_ADMIN_PASSWORD: change-me
 ```
 
@@ -79,7 +79,7 @@ SITE_DB_PATH: /app/data/site.db
 SITE_UPLOAD_DIR: /app/data/uploads
 SITE_DOWNLOAD_DIR: /app/data/downloads
 SITE_ENABLE_SIDEWORK_SYNC: "false"
-SITE_ADMIN_USER: ${SITE_ADMIN_USER:-admin}
+SITE_ADMIN_USER: ${SITE_ADMIN_USER:-fyanxv}
 SITE_ADMIN_PASSWORD: ${SITE_ADMIN_PASSWORD:-change-me}
 ```
 
@@ -101,7 +101,7 @@ SITE_ADMIN_PASSWORD: ${SITE_ADMIN_PASSWORD:-change-me}
 1. 先把当前项目推到你自己的 GitHub 仓库。
 2. 服务器拉取代码后执行 `docker compose up -d --build`。
 3. 用反代把域名指到 `127.0.0.1:8000`。
-4. 登录 `/admin` 修改后台账号密码、公告、购买链接和下载包。
+4. 登录 `/fyanxv` 修改后台账号密码、公告、购买链接和下载包。
 
 ## GitHub 仓库
 
