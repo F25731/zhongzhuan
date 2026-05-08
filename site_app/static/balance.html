@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
+  <title>云逸 | 余额查询</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #101828;
+      --muted: #5d6675;
+      --line: #e3e8f1;
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+      --green: #0f9f63;
+      --green-soft: #ecfdf5;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --red: #b42318;
+      --red-soft: #fef3f2;
+      --shadow: 0 16px 38px rgba(15, 23, 42, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .shell {
+      width: min(1080px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.92);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      display: block;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, .16);
+    }
+
+    .navlinks { display: flex; gap: 8px; flex-wrap: wrap; }
+    .navlinks a {
+      padding: 8px 12px;
+      border-radius: 7px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+    .navlinks a.active { color: var(--blue); background: var(--blue-soft); border-color: #bfd4ff; }
+
+    .panel {
+      padding: 28px;
+      margin-bottom: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .kicker {
+      width: fit-content;
+      padding: 4px 10px;
+      margin-bottom: 14px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); line-height: 1.12; letter-spacing: 0; }
+    .lead { margin: 14px 0 0; color: var(--muted); line-height: 1.75; font-size: 16px; max-width: 760px; }
+
+    .query {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 800; color: #293241; }
+    input {
+      width: 100%;
+      height: 46px;
+      padding: 0 12px;
+      border: 1px solid #cdd5e1;
+      border-radius: 8px;
+      outline: none;
+      font-size: 15px;
+      color: var(--text);
+      background: #fff;
+    }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+    button {
+      align-self: end;
+      height: 46px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--blue);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button:disabled { opacity: .62; cursor: not-allowed; }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-left: 3px solid var(--blue);
+      border-radius: 0 8px 8px 0;
+      background: var(--blue-soft);
+      color: #1d4ed8;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .status.error { border-left-color: var(--red); background: var(--red-soft); color: var(--red); }
+    .status.ok { border-left-color: var(--green); background: var(--green-soft); color: #0f6b43; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .metric {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+    .metric span { display: block; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .metric strong { display: block; margin-top: 8px; font-size: 24px; line-height: 1.1; }
+
+    .progress {
+      height: 10px;
+      margin-top: 18px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #edf2f7;
+    }
+    .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--green), var(--blue)); }
+
+    .details {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+      margin-top: 18px;
+      color: #334155;
+      font-size: 14px;
+    }
+    .details div { display: flex; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .details span { color: var(--muted); }
+    .details strong { text-align: right; }
+
+    .hidden { display: none; }
+
+    @media (max-width: 760px) {
+      .query, .summary, .details { grid-template-columns: 1fr; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand"><img class="brand-logo" src="/static/assets/yunyi-logo.svg" alt="云逸"><span id="brandTitle">云逸余额查询</span></div>
+      <div class="navlinks">
+        <a href="/">首页导入</a>
+        <a href="/balance" class="active">余额查询</a>
+        <a href="/tutorial">教程</a>
+      </div>
+    </div>
+
+    <section class="panel">
+      <div class="kicker" id="heroKicker">云逸 · 卡密状态与额度</div>
+      <h1>查询卡密余额和到期时间</h1>
+      <p class="lead">输入你的卡密即可查看剩余额度、已用额度、请求次数、Token 用量和到期时间。查询只用于本次请求，不会在本站保存卡密。</p>
+
+      <div class="query">
+        <div>
+          <label for="apiKey">卡密 / API Key</label>
+          <input id="apiKey" autocomplete="off" placeholder="请输入你的卡密">
+        </div>
+        <button id="queryButton" type="button" onclick="queryBalance()">查询余额</button>
+      </div>
+      <div class="status" id="status">输入卡密后点击查询，结果会显示在下方。</div>
+    </section>
+
+    <section class="panel hidden" id="resultPanel">
+      <div class="summary">
+        <div class="metric"><span>剩余额度</span><strong id="remaining">-</strong></div>
+        <div class="metric"><span>已用额度</span><strong id="used">-</strong></div>
+        <div class="metric"><span>总额度</span><strong id="total">-</strong></div>
+        <div class="metric"><span>剩余时间</span><strong id="timeLeft">-</strong></div>
+      </div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="details">
+        <div><span>卡密预览</span><strong id="keyPreview">-</strong></div>
+        <div><span>状态</span><strong id="statusText">-</strong></div>
+        <div><span>套餐</span><strong id="planName">-</strong></div>
+        <div><span>服务类型</span><strong id="serviceType">-</strong></div>
+        <div><span>今日消耗</span><strong id="dailySpent">-</strong></div>
+        <div><span>请求次数</span><strong id="requestCount">-</strong></div>
+        <div><span>总 Token</span><strong id="totalTokens">-</strong></div>
+        <div><span>到期时间</span><strong id="expiresAt">-</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const defaultSettings = { brandName: '云逸', siteDomain: 'yunyi.hstudy.xyz' };
+    let siteSettings = { ...defaultSettings };
+
+    function fmtNumber(value) {
+      const number = Number(value || 0);
+      return Number.isFinite(number) ? number.toLocaleString('zh-CN') : '-';
+    }
+
+    function fmtDate(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleString('zh-CN', { hour12: false });
+    }
+
+    function fmtTimeLeft(seconds) {
+      if (seconds === null || seconds === undefined) return '-';
+      if (seconds <= 0) return '已到期';
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      if (days > 0) return `${days}天${hours}小时`;
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${hours}小时${minutes}分钟`;
+    }
+
+    function setStatus(text, type = '') {
+      const node = document.getElementById('status');
+      node.textContent = text;
+      node.className = `status ${type}`.trim();
+    }
+
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/site-settings');
+        const data = await res.json();
+        siteSettings = { ...siteSettings, ...(data.settings || {}) };
+      } catch {}
+      const brand = siteSettings.brandName || defaultSettings.brandName;
+      document.title = `${brand} | 余额查询`;
+      document.getElementById('brandTitle').textContent = `${brand}余额查询`;
+      document.getElementById('heroKicker').textContent = `${brand} · 卡密状态与额度`;
+    }
+
+    async function queryBalance() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const button = document.getElementById('queryButton');
+      if (!apiKey) {
+        setStatus('请先输入卡密。', 'error');
+        return;
+      }
+      button.disabled = true;
+      setStatus('正在查询余额...');
+      try {
+        const res = await fetch('/api/balance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.detail || `HTTP ${res.status}`);
+        }
+        renderBalance(data.balance || {});
+        setStatus('查询成功。', 'ok');
+      } catch (err) {
+        document.getElementById('resultPanel').classList.add('hidden');
+        setStatus(`查询失败：${err.message}`, 'error');
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function renderBalance(data) {
+      const quota = data.quota || {};
+      const usage = data.usage || {};
+      const timestamps = data.timestamps || {};
+      document.getElementById('remaining').textContent = fmtNumber(quota.remaining);
+      document.getElementById('used').textContent = fmtNumber(quota.used);
+      document.getElementById('total').textContent = fmtNumber(quota.total);
+      document.getElementById('timeLeft').textContent = fmtTimeLeft(timestamps.remainingSeconds);
+      document.getElementById('bar').style.width = `${Math.max(0, Math.min(100, Number(quota.usedPercent || 0)))}%`;
+      document.getElementById('keyPreview').textContent = data.keyPreview || '-';
+      document.getElementById('statusText').textContent = data.status || '-';
+      document.getElementById('planName').textContent = data.planName || '-';
+      document.getElementById('serviceType').textContent = data.serviceType || '-';
+      document.getElementById('dailySpent').textContent = fmtNumber(usage.dailySpent);
+      document.getElementById('requestCount').textContent = fmtNumber(usage.requestCount);
+      document.getElementById('totalTokens').textContent = fmtNumber(usage.totalTokens);
+      document.getElementById('expiresAt').textContent = fmtDate(timestamps.expiresAt);
+      document.getElementById('resultPanel').classList.remove('hidden');
+    }
+
+    loadSettings();
+  </script>
+</body>
+</html>

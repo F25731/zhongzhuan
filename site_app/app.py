@@ -263,6 +263,7 @@ def default_site_settings() -> Dict[str, Any]:
         "siteDomain": "yunyi.hstudy.xyz",
         "announcement": "导入前请先安装 CC-Switch。卡密会在浏览器本地生成导入链接并写入本机 CC-Switch；导入后如未生效，请在 CC-Switch 中手动激活对应通道。",
         "buyUrl": "https://pay.ldxp.cn/shop/Q5L5OORI",
+        "balanceApiUrl": "https://yunyi.cfd/user/api/v1/me",
         "downloadLabel": "下载 CC-Switch",
         "downloadFilename": "CC-Switch-v3.14.1-Windows_8.msi",
         "downloadUrl": "",
@@ -282,6 +283,66 @@ def get_site_settings() -> Dict[str, Any]:
     if filename:
         settings["downloadUrl"] = f"/downloads/{filename}"
     return settings
+
+
+def public_site_settings() -> Dict[str, Any]:
+    settings = get_site_settings()
+    settings.pop("balanceApiUrl", None)
+    return settings
+
+
+def parse_iso_datetime(value: str) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def clean_balance_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    quota = payload.get("quota") if isinstance(payload.get("quota"), dict) else {}
+    usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
+    timestamps = payload.get("timestamps") if isinstance(payload.get("timestamps"), dict) else {}
+    expires_at = str(timestamps.get("expires_at") or "")
+    expiry = parse_iso_datetime(expires_at)
+    remaining_seconds = None
+    if expiry:
+        remaining_seconds = max(0, int((expiry - datetime.now(timezone.utc)).total_seconds()))
+
+    return {
+        "keyPreview": payload.get("key_preview", ""),
+        "status": payload.get("status", ""),
+        "serviceType": payload.get("service_type", ""),
+        "planName": payload.get("sub_service_type_name", ""),
+        "billingType": payload.get("billing_type", ""),
+        "quota": {
+            "dailyRemaining": quota.get("daily_remaining", 0),
+            "total": quota.get("total_quota", 0),
+            "remaining": quota.get("remaining_quota", 0),
+            "used": quota.get("used_quota", 0),
+            "usedPercent": quota.get("used_percent", 0),
+            "remainingCount": quota.get("remaining_count", 0),
+        },
+        "usage": {
+            "totalSpent": usage.get("total_spent", 0),
+            "dailySpent": usage.get("daily_spent", 0),
+            "requestCount": usage.get("request_count", 0),
+            "dailyRequestCount": usage.get("daily_request_count", 0),
+            "inputTokens": usage.get("input_tokens", 0),
+            "outputTokens": usage.get("output_tokens", 0),
+            "cacheReadTokens": usage.get("cache_read_tokens", 0),
+            "cacheWriteTokens": usage.get("cache_write_tokens", 0),
+            "totalTokens": usage.get("total_tokens", 0),
+        },
+        "timestamps": {
+            "activatedAt": timestamps.get("activated_at", ""),
+            "expiresAt": expires_at,
+            "lastUsedAt": timestamps.get("last_used_at", ""),
+            "validityDays": timestamps.get("validity_days", 0),
+            "remainingSeconds": remaining_seconds,
+        },
+    }
 
 
 async def save_upload(upload: Optional[UploadFile], subdir: str) -> str:
@@ -442,6 +503,11 @@ async def tutorial() -> FileResponse:
     return FileResponse(APP_DIR / "static" / "tutorial.html")
 
 
+@app.get("/balance")
+async def balance() -> FileResponse:
+    return FileResponse(APP_DIR / "static" / "balance.html")
+
+
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.mount("/static", StaticFiles(directory=APP_DIR / "static"), name="static")
 
@@ -456,7 +522,41 @@ async def download_file(filename: str) -> FileResponse:
 
 @app.get("/api/site-settings")
 async def api_site_settings() -> Dict[str, Any]:
-    return {"settings": get_site_settings()}
+    return {"settings": public_site_settings()}
+
+
+@app.post("/api/balance")
+async def api_balance(payload: Dict[str, Any]) -> Dict[str, Any]:
+    api_key = str(payload.get("apiKey") or "").strip()
+    if not api_key:
+        raise HTTPException(status_code=400, detail="api key required")
+    settings = get_site_settings()
+    balance_api_url = str(settings.get("balanceApiUrl") or default_site_settings()["balanceApiUrl"]).strip()
+    if not balance_api_url.startswith("https://"):
+        raise HTTPException(status_code=500, detail="balance api url must use https")
+    try:
+        async with httpx.AsyncClient(timeout=12) as client:
+            upstream = await client.get(
+                balance_api_url,
+                headers={
+                    "Accept": "application/json",
+                    "Authorization": f"Bearer {api_key}",
+                    "User-Agent": "yunyi-site/1.0",
+                },
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="balance query failed") from exc
+    if upstream.status_code in {401, 403}:
+        raise HTTPException(status_code=401, detail="卡密无效或无权查询")
+    if upstream.status_code >= 400:
+        raise HTTPException(status_code=502, detail="上级余额接口返回异常")
+    try:
+        data = upstream.json()
+    except ValueError as exc:
+        raise HTTPException(status_code=502, detail="上级余额接口返回格式异常") from exc
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=502, detail="上级余额接口返回格式异常")
+    return {"balance": clean_balance_payload(data)}
 
 
 @app.get("/api/admin/site-settings")
@@ -473,6 +573,7 @@ async def api_admin_update_site_settings(payload: Dict[str, Any], _: str = Depen
         "siteDomain": str(payload.get("siteDomain") or current["siteDomain"]).strip() or current["siteDomain"],
         "announcement": str(payload.get("announcement") or "").strip(),
         "buyUrl": str(payload.get("buyUrl") or "").strip(),
+        "balanceApiUrl": str(payload.get("balanceApiUrl") or current.get("balanceApiUrl", default_site_settings()["balanceApiUrl"])).strip(),
         "downloadLabel": str(payload.get("downloadLabel") or current["downloadLabel"]).strip() or current["downloadLabel"],
         "claudeName": str(payload.get("claudeName") or current["claudeName"]).strip() or current["claudeName"],
         "claudeEndpoint": str(payload.get("claudeEndpoint") or current["claudeEndpoint"]).strip() or current["claudeEndpoint"],
