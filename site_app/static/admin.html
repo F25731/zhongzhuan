@@ -223,8 +223,10 @@
           <label>下载按钮文案<input id="downloadLabel" placeholder="如：下载 CC-Switch"></label>
           <label>Claude 显示名称<input id="claudeName" placeholder="如：云逸Claude"></label>
           <label>Claude API 地址<input id="claudeEndpoint" placeholder="https://yunyi.cfd/claude"></label>
+          <label>Claude 官网链接<input id="claudeHomepage" placeholder="https://yunyi.cfd"></label>
           <label>Codex 显示名称<input id="codexName" placeholder="如：云逸Codex"></label>
           <label>Codex API 地址<input id="codexEndpoint" placeholder="https://yunyi.cfd/codex"></label>
+          <label>Codex 官网链接<input id="codexHomepage" placeholder="https://yunyi.cfd"></label>
           <label>上传 CC-Switch 安装包<input id="downloadFile" type="file"></label>
           <div class="tip">上传新安装包后，首页和教程页的下载按钮会自动指向最新文件。</div>
         </div>
@@ -269,8 +271,10 @@
       document.getElementById('downloadLabel').value = settings.downloadLabel || '';
       document.getElementById('claudeName').value = settings.claudeName || '';
       document.getElementById('claudeEndpoint').value = settings.claudeEndpoint || '';
+      document.getElementById('claudeHomepage').value = settings.claudeHomepage || '';
       document.getElementById('codexName').value = settings.codexName || '';
       document.getElementById('codexEndpoint').value = settings.codexEndpoint || '';
+      document.getElementById('codexHomepage').value = settings.codexHomepage || '';
     }
 
     async function loadSettings() {
@@ -297,8 +301,10 @@
           downloadLabel: document.getElementById('downloadLabel').value.trim(),
           claudeName: document.getElementById('claudeName').value.trim(),
           claudeEndpoint: document.getElementById('claudeEndpoint').value.trim(),
+          claudeHomepage: document.getElementById('claudeHomepage').value.trim(),
           codexName: document.getElementById('codexName').value.trim(),
-          codexEndpoint: document.getElementById('codexEndpoint').value.trim()
+          codexEndpoint: document.getElementById('codexEndpoint').value.trim(),
+          codexHomepage: document.getElementById('codexHomepage').value.trim()
         };
         const data = await adminFetch('/api/admin/site-settings', {
           method: 'PUT',

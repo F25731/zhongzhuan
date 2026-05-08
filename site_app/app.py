@@ -268,8 +268,10 @@ def default_site_settings() -> Dict[str, Any]:
         "downloadUrl": "",
         "claudeName": "云逸Claude",
         "claudeEndpoint": "https://yunyi.cfd/claude",
+        "claudeHomepage": "https://yunyi.cfd",
         "codexName": "云逸Codex",
         "codexEndpoint": "https://yunyi.cfd/codex",
+        "codexHomepage": "https://yunyi.cfd",
     }
 
 
@@ -474,8 +476,10 @@ async def api_admin_update_site_settings(payload: Dict[str, Any], _: str = Depen
         "downloadLabel": str(payload.get("downloadLabel") or current["downloadLabel"]).strip() or current["downloadLabel"],
         "claudeName": str(payload.get("claudeName") or current["claudeName"]).strip() or current["claudeName"],
         "claudeEndpoint": str(payload.get("claudeEndpoint") or current["claudeEndpoint"]).strip() or current["claudeEndpoint"],
+        "claudeHomepage": str(payload.get("claudeHomepage") or current.get("claudeHomepage", "")).strip(),
         "codexName": str(payload.get("codexName") or current["codexName"]).strip() or current["codexName"],
         "codexEndpoint": str(payload.get("codexEndpoint") or current["codexEndpoint"]).strip() or current["codexEndpoint"],
+        "codexHomepage": str(payload.get("codexHomepage") or current.get("codexHomepage", "")).strip(),
         "downloadFilename": current.get("downloadFilename", ""),
         "downloadUrl": current.get("downloadUrl", ""),
     }

@@ -442,8 +442,10 @@
       downloadUrl: '',
       claudeName: '云逸Claude',
       claudeEndpoint: 'https://yunyi.cfd/claude',
+      claudeHomepage: 'https://yunyi.cfd',
       codexName: '云逸Codex',
-      codexEndpoint: 'https://yunyi.cfd/codex'
+      codexEndpoint: 'https://yunyi.cfd/codex',
+      codexHomepage: 'https://yunyi.cfd'
     };
 
     async function loadSettings() {
@@ -481,8 +483,8 @@
       }
 
       const config = type === 'claude'
-        ? { app: 'claude', name: siteSettings.claudeName, endpoint: siteSettings.claudeEndpoint }
-        : { app: 'codex', name: siteSettings.codexName, endpoint: siteSettings.codexEndpoint };
+        ? { app: 'claude', name: siteSettings.claudeName, endpoint: siteSettings.claudeEndpoint, homepage: siteSettings.claudeHomepage }
+        : { app: 'codex', name: siteSettings.codexName, endpoint: siteSettings.codexEndpoint, homepage: siteSettings.codexHomepage };
 
       const params = new URLSearchParams({
         resource: 'provider',
@@ -492,6 +494,10 @@
         apiKey,
         endpoint: config.endpoint
       });
+
+      if (config.homepage) {
+        params.set('homepage', config.homepage);
+      }
 
       const url = `ccswitch://v1/import?${params.toString()}`;
       status.textContent = `正在唤起 CC-Switch：${url.replace(/apiKey=([^&]+)/, 'apiKey=[已打码]')}`;
