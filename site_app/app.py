@@ -307,6 +307,18 @@ def clean_balance_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     quota = payload.get("quota") if isinstance(payload.get("quota"), dict) else {}
     usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
     timestamps = payload.get("timestamps") if isinstance(payload.get("timestamps"), dict) else {}
+    billing_type = str(payload.get("billing_type") or quota.get("type") or "")
+    if billing_type == "duration":
+        total_quota = quota.get("daily_quota", 0)
+        remaining_quota = quota.get("daily_remaining", 0)
+        used_quota = quota.get("daily_spent", usage.get("daily_spent", 0))
+    else:
+        total_quota = quota.get("total_quota", 0)
+        remaining_quota = quota.get("remaining_quota", 0)
+        used_quota = quota.get("used_quota", usage.get("total_spent", 0))
+    used_percent = quota.get("used_percent")
+    if used_percent is None and total_quota:
+        used_percent = round(float(used_quota or 0) / float(total_quota) * 100)
     expires_at = str(timestamps.get("expires_at") or "")
     expiry = parse_iso_datetime(expires_at)
     remaining_seconds = None
@@ -318,13 +330,19 @@ def clean_balance_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "status": payload.get("status", ""),
         "serviceType": payload.get("service_type", ""),
         "planName": payload.get("sub_service_type_name", ""),
-        "billingType": payload.get("billing_type", ""),
+        "billingType": billing_type,
         "quota": {
+            "type": quota.get("type", billing_type),
+            "dailyQuota": quota.get("daily_quota", 0),
+            "dailySpent": quota.get("daily_spent", 0),
+            "dailyTotalSpent": quota.get("daily_total_spent", 0),
             "dailyRemaining": quota.get("daily_remaining", 0),
-            "total": quota.get("total_quota", 0),
-            "remaining": quota.get("remaining_quota", 0),
-            "used": quota.get("used_quota", 0),
-            "usedPercent": quota.get("used_percent", 0),
+            "nextResetAt": quota.get("next_reset_at", ""),
+            "resetTimezone": quota.get("reset_timezone", ""),
+            "total": total_quota,
+            "remaining": remaining_quota,
+            "used": used_quota,
+            "usedPercent": used_percent or 0,
             "remainingCount": quota.get("remaining_count", 0),
         },
         "usage": {

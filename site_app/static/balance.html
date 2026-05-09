@@ -253,9 +253,9 @@
 
     <section class="panel hidden" id="resultPanel">
       <div class="summary">
-        <div class="metric"><span>剩余额度</span><strong id="remaining">-</strong></div>
-        <div class="metric"><span>已用额度</span><strong id="used">-</strong></div>
-        <div class="metric"><span>总额度</span><strong id="total">-</strong></div>
+        <div class="metric"><span id="remainingLabel">剩余额度</span><strong id="remaining">-</strong></div>
+        <div class="metric"><span id="usedLabel">已用额度</span><strong id="used">-</strong></div>
+        <div class="metric"><span id="totalLabel">总额度</span><strong id="total">-</strong></div>
         <div class="metric"><span>剩余时间</span><strong id="timeLeft">-</strong></div>
       </div>
       <div class="progress"><div class="bar" id="bar"></div></div>
@@ -264,6 +264,8 @@
         <div><span>状态</span><strong id="statusText">-</strong></div>
         <div><span>套餐</span><strong id="planName">-</strong></div>
         <div><span>服务类型</span><strong id="serviceType">-</strong></div>
+        <div><span>计费类型</span><strong id="billingType">-</strong></div>
+        <div><span>每日重置</span><strong id="nextResetAt">-</strong></div>
         <div><span>今日消耗</span><strong id="dailySpent">-</strong></div>
         <div><span>请求次数</span><strong id="requestCount">-</strong></div>
         <div><span>总 Token</span><strong id="totalTokens">-</strong></div>
@@ -354,6 +356,10 @@
       const quota = data.quota || {};
       const usage = data.usage || {};
       const timestamps = data.timestamps || {};
+      const isDuration = data.billingType === 'duration' || quota.type === 'duration';
+      document.getElementById('remainingLabel').textContent = isDuration ? '今日剩余' : '剩余额度';
+      document.getElementById('usedLabel').textContent = isDuration ? '今日已用' : '已用额度';
+      document.getElementById('totalLabel').textContent = isDuration ? '每日额度' : '总额度';
       document.getElementById('remaining').textContent = fmtNumber(quota.remaining);
       document.getElementById('used').textContent = fmtNumber(quota.used);
       document.getElementById('total').textContent = fmtNumber(quota.total);
@@ -363,6 +369,8 @@
       document.getElementById('statusText').textContent = data.status || '-';
       document.getElementById('planName').textContent = data.planName || '-';
       document.getElementById('serviceType').textContent = data.serviceType || '-';
+      document.getElementById('billingType').textContent = isDuration ? '每日额度' : '总额度';
+      document.getElementById('nextResetAt').textContent = fmtDate(quota.nextResetAt);
       document.getElementById('dailySpent').textContent = fmtNumber(usage.dailySpent);
       document.getElementById('requestCount').textContent = fmtNumber(usage.requestCount);
       document.getElementById('totalTokens').textContent = fmtNumber(usage.totalTokens);
