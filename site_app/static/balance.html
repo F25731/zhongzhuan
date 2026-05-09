@@ -342,7 +342,7 @@
         if (!res.ok) {
           throw new Error(data.detail || `HTTP ${res.status}`);
         }
-        renderBalance(data.balance || {}, data.modelTrends || {});
+        renderBalance(data.balance || {}, data.modelTrends || {}, data.usageHistory || {});
         setStatus('查询成功。', 'ok');
       } catch (err) {
         document.getElementById('resultPanel').classList.add('hidden');
@@ -352,7 +352,7 @@
       }
     }
 
-    function renderBalance(data, modelTrends) {
+    function renderBalance(data, modelTrends, usageHistory) {
       const quota = data.quota || {};
       const usage = data.usage || {};
       const timestamps = data.timestamps || {};
@@ -372,8 +372,9 @@
       document.getElementById('billingType').textContent = isDuration ? '每日额度' : '总额度';
       document.getElementById('nextResetAt').textContent = fmtDate(quota.nextResetAt);
       document.getElementById('dailySpent').textContent = fmtNumber(usage.dailySpent);
-      document.getElementById('requestCount').textContent = fmtNumber(usage.requestCount);
-      document.getElementById('totalTokens').textContent = fmtNumber(usage.totalTokens);
+      const historyTotals = (usageHistory && usageHistory.totals) || {};
+      document.getElementById('requestCount').textContent = fmtNumber(historyTotals.requests ?? usage.requestCount);
+      document.getElementById('totalTokens').textContent = fmtNumber(historyTotals.totalTokens ?? usage.totalTokens);
       document.getElementById('expiresAt').textContent = fmtDate(timestamps.expiresAt);
       renderModelRows(modelTrends.models || []);
       document.getElementById('resultPanel').classList.remove('hidden');

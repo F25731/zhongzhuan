@@ -467,7 +467,7 @@
 
     const usageQueryScript = `({
   request: {
-    url: "{{baseUrl}}/user/api/v1/me",
+    url: "{{baseUrl}}/user/api/v1/me?view=dashboard",
     method: "GET",
     headers: {
       "Accept": "application/json",
@@ -482,9 +482,13 @@
     const billingType = response.billing_type || quota.type || "";
     const isDuration = billingType === "duration";
     const total = isDuration ? quota.daily_quota : quota.total_quota;
-    const remaining = isDuration ? quota.daily_remaining : quota.remaining_quota;
+    const remaining = isDuration
+      ? quota.daily_remaining
+      : (quota.remaining_quota ?? quota.quota_pack_remaining ?? quota.requests_pack_remaining ?? quota.remaining_count);
     const used = isDuration ? (quota.daily_spent ?? usage.daily_spent) : (quota.used_quota ?? usage.total_spent);
-    const usedPercent = total ? Math.round(Number(used || 0) / Number(total || 1) * 100) : (quota.used_percent ?? 0);
+    const usedPercent = isDuration
+      ? (quota.daily_used ?? (total ? Math.round(Number(used || 0) / Number(total || 1) * 100) : 0))
+      : (quota.used_percent ?? (total ? Math.round(Number(used || 0) / Number(total || 1) * 100) : 0));
     return {
       isValid: response.status === "active",
       invalidMessage: response.status === "active" ? "" : "卡密状态异常：" + response.status,
@@ -541,8 +545,25 @@
       }
 
       const config = type === 'claude'
-        ? { app: 'claude', name: siteSettings.claudeName, endpoint: siteSettings.claudeEndpoint, homepage: siteSettings.claudeHomepage }
-        : { app: 'codex', name: siteSettings.codexName, endpoint: siteSettings.codexEndpoint, homepage: siteSettings.codexHomepage };
+        ? {
+            app: 'claude',
+            name: siteSettings.claudeName,
+            endpoint: siteSettings.claudeEndpoint,
+            homepage: siteSettings.claudeHomepage,
+            icon: 'claude',
+            model: 'claude-sonnet-4-20250514',
+            haikuModel: 'claude-haiku-4-20250514',
+            sonnetModel: 'claude-sonnet-4-20250514',
+            opusModel: 'claude-sonnet-4-20250514'
+          }
+        : {
+            app: 'codex',
+            name: siteSettings.codexName,
+            endpoint: siteSettings.codexEndpoint,
+            homepage: siteSettings.codexHomepage,
+            icon: 'openai',
+            model: 'gpt-5-codex'
+          };
 
       const params = new URLSearchParams({
         resource: 'provider',
@@ -555,12 +576,17 @@
         usageApiKey: apiKey,
         usageBaseUrl: rootFromUrl(config.endpoint),
         usageScript: encodeBase64Unicode(usageQueryScript),
-        usageAutoInterval: '10'
+        usageAutoInterval: '60'
       });
 
       if (config.homepage) {
         params.set('homepage', config.homepage);
       }
+      params.set('icon', config.icon);
+      params.set('model', config.model);
+      if (config.haikuModel) params.set('haikuModel', config.haikuModel);
+      if (config.sonnetModel) params.set('sonnetModel', config.sonnetModel);
+      if (config.opusModel) params.set('opusModel', config.opusModel);
 
       const url = `ccswitch://v1/import?${params.toString()}`;
       status.textContent = '正在唤起 CC-Switch，请在浏览器弹窗中允许打开。';
