@@ -373,6 +373,17 @@
   </main>
 
   <script>
+    function currentPlatform() {
+      const ua = navigator.userAgent.toLowerCase();
+      if (ua.includes('mac os') || ua.includes('macintosh')) return 'macos';
+      if (ua.includes('linux')) return 'linux';
+      return 'windows';
+    }
+
+    function platformLabel(platform) {
+      return { windows: 'Windows', macos: 'macOS', linux: 'Linux' }[platform] || platform;
+    }
+
     async function loadSettings() {
       try {
         const res = await fetch('/api/site-settings');
@@ -384,8 +395,10 @@
         document.getElementById('brandTitle').textContent = `${brand}教程`;
         document.getElementById('heroKicker').textContent = `${brand} · Node.js + Git + CC-Switch`;
         document.getElementById('heroDesc').innerHTML = `这是 <strong>${brand}</strong> 的简化教程页，对外入口是 <strong>${domain}</strong>。流程只保留最需要的部分：先安装 <strong>Node.js</strong>、<strong>Git</strong>、<strong>CC-Switch</strong>，然后从首页一键导入通道。导入并激活成功后，客户端、VS Code 和终端 CLI 都可以用。`;
-        const downloadUrl = settings.downloadUrl || '';
-        const downloadLabel = settings.downloadLabel || '下载 CC-Switch';
+        const packages = settings.downloadPackages || {};
+        const recommended = packages[currentPlatform()] || settings.downloadPackage || null;
+        const downloadUrl = recommended ? recommended.downloadUrl : (settings.downloadUrl || '');
+        const downloadLabel = recommended ? `下载 CC-Switch（${platformLabel(recommended.platform)}）` : (settings.downloadLabel || '下载 CC-Switch');
         const btns = [document.getElementById('downloadBtn'), document.getElementById('downloadBtnCard')];
         if (downloadUrl) {
           btns.forEach((btn) => {

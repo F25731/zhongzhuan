@@ -20,7 +20,7 @@ except ImportError:
         return timezone(timedelta(hours=8))
 
 import httpx
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -33,6 +33,7 @@ DOWNLOAD_DIR = Path(os.getenv("SITE_DOWNLOAD_DIR", APP_DIR / "data" / "downloads
 BEIJING_TZ = ZoneInfo("Asia/Shanghai")
 ADMIN_USER = os.getenv("SITE_ADMIN_USER", "fyanxv")
 ADMIN_PASSWORD = os.getenv("SITE_ADMIN_PASSWORD", "change-me")
+DOWNLOAD_PLATFORMS = {"windows", "macos", "linux"}
 
 app = FastAPI(title="云逸中转站")
 security = HTTPBasic()
@@ -74,6 +75,7 @@ def init_db() -> None:
             """
             create table if not exists download_packages (
                 id integer primary key autoincrement,
+                platform text not null default 'windows',
                 filename text not null unique,
                 original_name text not null,
                 size_bytes integer not null default 0,
@@ -82,6 +84,11 @@ def init_db() -> None:
             )
             """
         )
+        try:
+            conn.execute("alter table download_packages add column platform text not null default 'windows'")
+        except sqlite3.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                raise
 
 
 @app.on_event("startup")
@@ -132,6 +139,7 @@ def row_to_download_package(row: sqlite3.Row) -> Dict[str, Any]:
     filename = row["filename"]
     return {
         "id": row["id"],
+        "platform": row["platform"] if "platform" in row.keys() else "windows",
         "filename": filename,
         "originalName": row["original_name"],
         "sizeBytes": row["size_bytes"],
@@ -147,24 +155,44 @@ def list_download_packages() -> list[Dict[str, Any]]:
         rows = conn.execute(
             """
             select * from download_packages
-            order by active desc, uploaded_at desc, id desc
+            order by active desc, platform asc, uploaded_at desc, id desc
             """
         ).fetchall()
     return [row_to_download_package(row) for row in rows]
 
 
-def active_download_package() -> Optional[Dict[str, Any]]:
+def active_download_package(platform: str = "windows") -> Optional[Dict[str, Any]]:
+    platform = normalize_platform(platform)
     init_db()
     with db() as conn:
         row = conn.execute(
             """
             select * from download_packages
-            where active = 1
+            where active = 1 and platform = ?
             order by uploaded_at desc, id desc
             limit 1
             """
+            ,
+            (platform,),
         ).fetchone()
     return row_to_download_package(row) if row else None
+
+
+def active_download_packages() -> Dict[str, Dict[str, Any]]:
+    return {
+        platform: package
+        for platform in ("windows", "macos", "linux")
+        if (package := active_download_package(platform))
+    }
+
+
+def normalize_platform(platform: str) -> str:
+    value = str(platform or "").strip().lower()
+    if value in {"mac", "darwin", "osx"}:
+        return "macos"
+    if value not in DOWNLOAD_PLATFORMS:
+        return "windows"
+    return value
 
 
 def download_target(filename: str) -> Path:
@@ -189,11 +217,13 @@ def ensure_download_package_record(settings: Dict[str, Any]) -> None:
         ).fetchone()
         if existing:
             return
-        has_active = conn.execute("select count(*) as c from download_packages where active = 1").fetchone()["c"]
+        has_active = conn.execute(
+            "select count(*) as c from download_packages where active = 1 and platform = 'windows'"
+        ).fetchone()["c"]
         conn.execute(
             """
-            insert into download_packages(filename, original_name, size_bytes, uploaded_at, active)
-            values(?, ?, ?, ?, ?)
+            insert into download_packages(platform, filename, original_name, size_bytes, uploaded_at, active)
+            values('windows', ?, ?, ?, ?, ?)
             """,
             (filename, filename, target.stat().st_size, now_text(), 0 if has_active else 1),
         )
@@ -224,12 +254,15 @@ def get_site_settings() -> Dict[str, Any]:
     saved = get_config("site_settings", {}) or {}
     settings = {**default_site_settings(), **saved}
     settings.pop("downloadPackage", None)
+    settings.pop("downloadPackages", None)
     settings.pop("downloadUrl", None)
     ensure_download_package_record(settings)
-    package = active_download_package()
+    packages = active_download_packages()
+    package = packages.get("windows") or next(iter(packages.values()), None)
     if package:
         settings["downloadFilename"] = package["filename"]
         settings["downloadPackage"] = package
+    settings["downloadPackages"] = packages
     filename = str(settings.get("downloadFilename") or "").strip()
     settings["downloadUrl"] = f"/downloads/{filename}" if filename else ""
     return settings
@@ -238,6 +271,7 @@ def get_site_settings() -> Dict[str, Any]:
 def save_site_settings(settings: Dict[str, Any]) -> None:
     clean = dict(settings)
     clean.pop("downloadPackage", None)
+    clean.pop("downloadPackages", None)
     clean.pop("downloadUrl", None)
     set_config("site_settings", clean)
 
@@ -582,12 +616,13 @@ async def api_admin_update_site_settings(payload: Dict[str, Any], _: str = Depen
 
 @app.get("/api/admin/download-packages")
 async def api_admin_download_packages(_: str = Depends(require_admin)) -> Dict[str, Any]:
-    return {"items": list_download_packages(), "active": active_download_package()}
+    return {"items": list_download_packages(), "active": active_download_packages()}
 
 
 @app.post("/api/admin/download-package")
 async def api_admin_upload_download_package(
     file: UploadFile = File(...),
+    platform: str = Form("windows"),
     _: str = Depends(require_admin),
 ) -> Dict[str, Any]:
     if not file.filename:
@@ -595,6 +630,7 @@ async def api_admin_upload_download_package(
     suffix = Path(file.filename).suffix.lower()
     if suffix not in {".msi", ".zip", ".exe", ".dmg", ".pkg", ".deb", ".rpm", ".appimage"}:
         raise HTTPException(status_code=400, detail="unsupported file type")
+    package_platform = normalize_platform(platform)
     original_name = Path(file.filename).name
     safe_name = f"{uuid.uuid4().hex}{suffix}"
     target = download_target(safe_name)
@@ -602,16 +638,17 @@ async def api_admin_upload_download_package(
         shutil.copyfileobj(file.file, fh)
     size_bytes = target.stat().st_size
     with db() as conn:
-        conn.execute("update download_packages set active = 0")
+        conn.execute("update download_packages set active = 0 where platform = ?", (package_platform,))
         conn.execute(
             """
-            insert into download_packages(filename, original_name, size_bytes, uploaded_at, active)
-            values(?, ?, ?, ?, 1)
+            insert into download_packages(platform, filename, original_name, size_bytes, uploaded_at, active)
+            values(?, ?, ?, ?, ?, 1)
             """,
-            (safe_name, original_name, size_bytes, now_text()),
+            (package_platform, safe_name, original_name, size_bytes, now_text()),
         )
     settings = get_site_settings()
-    settings["downloadFilename"] = safe_name
+    if package_platform == "windows" or not settings.get("downloadFilename"):
+        settings["downloadFilename"] = safe_name
     settings["updatedAt"] = now_text()
     save_site_settings(settings)
     return {"settings": get_site_settings(), "packages": list_download_packages()}
@@ -626,10 +663,12 @@ async def api_admin_activate_download_package(package_id: int, _: str = Depends(
         target = download_target(row["filename"])
         if not target.exists() or not target.is_file():
             raise HTTPException(status_code=404, detail="package file missing")
-        conn.execute("update download_packages set active = 0")
+        package_platform = normalize_platform(row["platform"] if "platform" in row.keys() else "windows")
+        conn.execute("update download_packages set active = 0 where platform = ?", (package_platform,))
         conn.execute("update download_packages set active = 1 where id = ?", (package_id,))
     settings = get_site_settings()
-    settings["downloadFilename"] = row["filename"]
+    if package_platform == "windows" or not settings.get("downloadFilename"):
+        settings["downloadFilename"] = row["filename"]
     settings["updatedAt"] = now_text()
     save_site_settings(settings)
     return {"settings": get_site_settings(), "packages": list_download_packages()}
@@ -647,4 +686,4 @@ async def api_admin_delete_download_package(package_id: int, _: str = Depends(re
     target = download_target(row["filename"])
     if target.exists() and target.is_file():
         target.unlink()
-    return {"items": list_download_packages(), "active": active_download_package()}
+    return {"items": list_download_packages(), "active": active_download_packages()}

@@ -245,6 +245,17 @@
     button { background: #0f172a; }
     button.codex { background: var(--blue); }
     .link-button { margin-top: 16px; padding: 0 16px; background: var(--blue); }
+    .download-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .download-options .link-button {
+      margin-top: 0;
+      min-width: 128px;
+      background: var(--green);
+    }
     button:hover, .link-button:hover, .buy-button:hover { filter: brightness(.97); }
 
     .status {
@@ -429,6 +440,7 @@
         <a class="buy-button" id="buyButton" href="https://pay.ldxp.cn/shop/Q5L5OORI" target="_blank" rel="noopener">立即购买卡密</a>
         <div class="ok">同时提供软件下载和教程页面，适合直接放到服务器上线。</div>
         <a class="link-button" id="downloadButton" href="#" style="display:none;background:var(--green);">下载 CC-Switch</a>
+        <div class="download-options" id="downloadOptions"></div>
       </section>
     </div>
   </main>
@@ -441,6 +453,7 @@
       buyUrl: 'https://pay.ldxp.cn/shop/Q5L5OORI',
       downloadLabel: '下载 CC-Switch',
       downloadUrl: '',
+      downloadPackages: {},
       claudeName: '云逸Claude',
       claudeEndpoint: 'https://yunyi.cfd/claude',
       claudeHomepage: 'https://yunyi.cfd',
@@ -463,6 +476,17 @@
       } catch {
         return 'https://yunyi.cfd';
       }
+    }
+
+    function currentPlatform() {
+      const ua = navigator.userAgent.toLowerCase();
+      if (ua.includes('mac os') || ua.includes('macintosh')) return 'macos';
+      if (ua.includes('linux')) return 'linux';
+      return 'windows';
+    }
+
+    function platformLabel(platform) {
+      return { windows: 'Windows', macos: 'macOS', linux: 'Linux' }[platform] || platform;
     }
 
     const usageQueryScript = `({
@@ -529,11 +553,20 @@
       buyButton.href = siteSettings.buyUrl || '#';
 
       const downloadButton = document.getElementById('downloadButton');
-      if (siteSettings.downloadUrl) {
-        downloadButton.href = siteSettings.downloadUrl;
-        downloadButton.textContent = siteSettings.downloadLabel || '下载 CC-Switch';
+      const downloadOptions = document.getElementById('downloadOptions');
+      const packages = siteSettings.downloadPackages || {};
+      const recommended = packages[currentPlatform()] || siteSettings.downloadPackage || null;
+      const fallbackUrl = siteSettings.downloadUrl || '';
+      if (recommended || fallbackUrl) {
+        downloadButton.href = recommended ? recommended.downloadUrl : fallbackUrl;
+        const label = recommended ? `下载 CC-Switch（${platformLabel(recommended.platform)}）` : (siteSettings.downloadLabel || '下载 CC-Switch');
+        downloadButton.textContent = label;
         downloadButton.style.display = 'inline-flex';
       }
+      const platformLinks = ['windows', 'macos', 'linux']
+        .filter((platform) => packages[platform])
+        .map((platform) => `<a class="link-button" href="${packages[platform].downloadUrl}">${platformLabel(platform)}</a>`);
+      downloadOptions.innerHTML = platformLinks.length > 1 ? platformLinks.join('') : '';
     }
 
     function deploy(type) {

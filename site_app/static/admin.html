@@ -153,7 +153,7 @@
       font-weight: 700;
     }
 
-    input, textarea {
+    input, textarea, select {
       width: 100%;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
@@ -170,7 +170,7 @@
       line-height: 1.7;
     }
 
-    input:focus, textarea:focus {
+    input:focus, textarea:focus, select:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
     }
@@ -241,6 +241,7 @@
 
     .package-row:last-child { border-bottom: 0; }
     .package-name { word-break: break-all; font-weight: 800; }
+    #currentPackage { white-space: pre-wrap; }
 
     .badge {
       display: inline-flex;
@@ -400,6 +401,11 @@
         </div>
         <div class="card stack">
           <h2>上传新包</h2>
+          <label>适用平台<select id="downloadPlatform">
+            <option value="windows">Windows</option>
+            <option value="macos">macOS</option>
+            <option value="linux">Linux</option>
+          </select></label>
           <label>CC-Switch 安装包<input id="downloadFile" type="file"></label>
           <div class="actions">
             <button class="secondary" type="button" onclick="uploadPackage()">上传并启用</button>
@@ -461,6 +467,10 @@
       return `${value} B`;
     }
 
+    function platformLabel(platform) {
+      return { windows: 'Windows', macos: 'macOS', linux: 'Linux' }[platform] || platform;
+    }
+
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
@@ -509,16 +519,23 @@
     }
 
     function renderDashboard() {
-      const pack = currentSettings.downloadPackage || {};
+      const packs = currentSettings.downloadPackages || {};
+      const pack = packs.windows || currentSettings.downloadPackage || {};
       document.getElementById('dashBrand').textContent = currentSettings.brandName || '-';
       document.getElementById('dashDomain').textContent = currentSettings.siteDomain || '-';
-      document.getElementById('dashPackage').textContent = pack.originalName || currentSettings.downloadFilename || '-';
+      document.getElementById('dashPackage').textContent = ['windows', 'macos', 'linux'].filter((platform) => packs[platform]).map(platformLabel).join(' / ') || '-';
       document.getElementById('dashUpdated').textContent = currentSettings.updatedAt || '-';
       document.getElementById('dashClaude').textContent = `${currentSettings.claudeName || '-'}\n${currentSettings.claudeEndpoint || '-'}`;
       document.getElementById('dashCodex').textContent = `${currentSettings.codexName || '-'}\n${currentSettings.codexEndpoint || '-'}`;
-      document.getElementById('currentPackage').textContent = pack.originalName
-        ? `${pack.originalName}，${fmtBytes(pack.sizeBytes)}，上传于 ${pack.uploadedAt}`
-        : (currentSettings.downloadFilename || '暂未记录下载包');
+      const activeRows = ['windows', 'macos', 'linux']
+        .filter((platform) => packs[platform])
+        .map((platform) => {
+          const item = packs[platform];
+          return `${platformLabel(platform)}：${item.originalName || item.filename}，${fmtBytes(item.sizeBytes)}，上传于 ${item.uploadedAt}`;
+        });
+      document.getElementById('currentPackage').textContent = activeRows.length
+        ? activeRows.join('\n')
+        : (pack.originalName || currentSettings.downloadFilename || '暂未记录下载包');
     }
 
     function renderPackages(items) {
@@ -531,7 +548,7 @@
       list.innerHTML = currentPackages.map((item) => `
         <div class="package-row">
           <div>
-            <div class="package-name">${escapeHtml(item.originalName || item.filename)}</div>
+            <div class="package-name">${platformLabel(item.platform)} · ${escapeHtml(item.originalName || item.filename)}</div>
             <div class="muted">${escapeHtml(item.filename)}${item.active ? ' <span class="badge">当前使用</span>' : ''}</div>
           </div>
           <div>${fmtBytes(item.sizeBytes)}</div>
@@ -635,6 +652,7 @@
       try {
         const form = new FormData();
         form.append('file', file);
+        form.append('platform', document.getElementById('downloadPlatform').value);
         const data = await adminFetch('/api/admin/download-package', {
           method: 'POST',
           body: form
