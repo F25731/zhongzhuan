@@ -7,16 +7,20 @@
   <title>云逸后台</title>
   <style>
     :root {
-      --bg: #f6f8fb;
+      --bg: #f5f7fb;
       --panel: #ffffff;
-      --text: #0f172a;
+      --text: #111827;
       --muted: #64748b;
-      --line: #e2e8f0;
+      --line: #dbe3ef;
       --blue: #2563eb;
       --blue-soft: #eff6ff;
       --green: #0f9f63;
       --green-soft: #ecfdf5;
-      --shadow: 0 18px 40px rgba(15, 23, 42, .08);
+      --red: #dc2626;
+      --red-soft: #fef2f2;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --shadow: 0 16px 36px rgba(15, 23, 42, .08);
     }
 
     * { box-sizing: border-box; }
@@ -29,102 +33,139 @@
     }
 
     .shell {
-      width: min(980px, calc(100vw - 32px));
+      width: min(1180px, calc(100vw - 32px));
       margin: 0 auto;
-      padding: 28px 0 40px;
+      padding: 28px 0 42px;
     }
 
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      padding: 24px;
-    }
-
-    .head {
+    .topbar {
       display: flex;
-      align-items: end;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
       margin-bottom: 18px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--line);
     }
 
-    .head-brand {
+    .brand {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .head-logo {
-      width: 40px;
-      height: 40px;
-      display: block;
-      flex: 0 0 auto;
-      border-radius: 12px;
+    .brand img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
       box-shadow: 0 12px 28px rgba(37, 99, 235, .18);
     }
 
-    h1 {
-      margin: 0;
-      font-size: 24px;
-    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 15px; }
 
     .muted {
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
+      font-size: 13px;
+      line-height: 1.6;
     }
 
     .login {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      grid-template-columns: 180px 220px auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #334155;
+    }
+
+    .tab.active {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .panel {
+      display: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .panel.active { display: block; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
       margin-bottom: 18px;
     }
 
+    .stat, .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 16px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 18px;
+      word-break: break-all;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
     }
 
-    .card {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 18px;
-      background: #fbfdff;
-    }
-
-    .card h2 {
-      margin: 0 0 12px;
-      font-size: 18px;
+    .stack {
+      display: grid;
+      gap: 14px;
     }
 
     label {
       display: grid;
-      gap: 8px;
-      margin-bottom: 12px;
-      font-size: 14px;
+      gap: 7px;
+      font-size: 13px;
       color: #334155;
       font-weight: 700;
     }
 
     input, textarea {
       width: 100%;
-      border: 1px solid #cdd5e1;
+      border: 1px solid #cbd5e1;
       border-radius: 8px;
       background: #fff;
       color: var(--text);
-      padding: 12px 14px;
+      padding: 11px 12px;
       outline: none;
       font: inherit;
     }
 
     textarea {
-      min-height: 120px;
+      min-height: 116px;
       resize: vertical;
       line-height: 1.7;
     }
@@ -134,117 +175,250 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
     }
 
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-
-    button {
-      height: 42px;
-      padding: 0 16px;
+    button, .button-link {
+      min-height: 40px;
+      padding: 0 14px;
       border: 0;
       border-radius: 8px;
       font: inherit;
       font-weight: 800;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
     }
 
-    .primary {
-      background: var(--blue);
-      color: #fff;
+    .primary { background: var(--blue); color: #fff; }
+    .secondary { background: #fff; color: var(--text); border: 1px solid var(--line); }
+    .danger { background: var(--red-soft); color: var(--red); border: 1px solid #fecaca; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
     }
 
-    .secondary {
-      background: #fff;
-      color: var(--text);
-      border: 1px solid var(--line);
-    }
-
-    .tip {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      line-height: 1.7;
-      background: var(--blue-soft);
-      color: #1d4ed8;
-    }
-
-    .ok {
+    .status {
       margin-top: 16px;
       padding: 12px 14px;
-      border-left: 3px solid var(--green);
+      border-left: 3px solid var(--blue);
       border-radius: 0 8px 8px 0;
-      background: var(--green-soft);
-      color: #0f6b43;
+      background: var(--blue-soft);
+      color: #1d4ed8;
       font-size: 13px;
       line-height: 1.7;
       min-height: 42px;
     }
 
-    @media (max-width: 860px) {
-      .login, .grid { grid-template-columns: 1fr; }
+    .status.ok {
+      border-left-color: var(--green);
+      background: var(--green-soft);
+      color: #0f6b43;
+    }
+
+    .status.error {
+      border-left-color: var(--red);
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .status.warn {
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .package-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 110px 150px 170px;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .package-row:last-child { border-bottom: 0; }
+    .package-name { word-break: break-all; font-weight: 800; }
+
+    .badge {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .test-result {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 13px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 920px) {
+      .login, .grid, .stats, .package-row {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
   <main class="shell">
-    <section class="panel">
-      <div class="head">
-        <div class="head-brand">
-          <img class="head-logo" src="/static/assets/yunyi-logo.svg" alt="云逸">
-          <div>
-            <h1>云逸后台</h1>
-            <div class="muted">这里只做你当前需要的功能：公告、购买卡密地址、品牌名、下载包和导入配置。部署后，你只需要记住后台账号密码即可修改前台内容。</div>
+    <div class="topbar">
+      <div class="brand">
+        <img src="/static/assets/yunyi-logo.svg" alt="云逸">
+        <div>
+          <h1>云逸后台</h1>
+          <p class="muted">配置站点、导入参数、余额查询接口和 CC-Switch 下载包。</p>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button-link secondary" href="/" target="_blank">首页</a>
+        <a class="button-link secondary" href="/balance" target="_blank">余额页</a>
+        <a class="button-link secondary" href="/tutorial" target="_blank">教程页</a>
+      </div>
+    </div>
+
+    <section class="login">
+      <input id="adminUser" placeholder="后台用户名" value="fyanxv">
+      <input id="adminPass" type="password" placeholder="后台密码">
+      <button class="primary" type="button" onclick="loadAll()">登录并加载</button>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab active" type="button" data-tab="dashboard" onclick="switchTab('dashboard')">概览</button>
+      <button class="tab" type="button" data-tab="site" onclick="switchTab('site')">站点基础</button>
+      <button class="tab" type="button" data-tab="providers" onclick="switchTab('providers')">导入配置</button>
+      <button class="tab" type="button" data-tab="balance" onclick="switchTab('balance')">余额查询</button>
+      <button class="tab" type="button" data-tab="downloads" onclick="switchTab('downloads')">下载包</button>
+    </nav>
+
+    <section id="panel-dashboard" class="panel active">
+      <div class="stats">
+        <div class="stat"><span class="muted">品牌</span><strong id="dashBrand">-</strong></div>
+        <div class="stat"><span class="muted">站点域名</span><strong id="dashDomain">-</strong></div>
+        <div class="stat"><span class="muted">当前下载包</span><strong id="dashPackage">-</strong></div>
+        <div class="stat"><span class="muted">最近保存</span><strong id="dashUpdated">-</strong></div>
+      </div>
+      <div class="grid">
+        <div class="card stack">
+          <h2>Claude</h2>
+          <div class="muted" id="dashClaude">-</div>
+        </div>
+        <div class="card stack">
+          <h2>Codex</h2>
+          <div class="muted" id="dashCodex">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-site" class="panel">
+      <div class="grid">
+        <div class="card stack">
+          <h2>基础信息</h2>
+          <label>品牌名<input id="brandName" placeholder="如：云逸"></label>
+          <label>站点域名<input id="siteDomain" placeholder="如：yunyi.hstudy.xyz"></label>
+          <label>购买卡密地址<input id="buyUrl" placeholder="https://pay.ldxp.cn/shop/Q5L5OORI"></label>
+        </div>
+        <div class="card stack">
+          <h2>公告</h2>
+          <label>首页公告<textarea id="announcement" placeholder="首页公告内容"></textarea></label>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" type="button" onclick="saveSettings()">保存配置</button>
+      </div>
+    </section>
+
+    <section id="panel-providers" class="panel">
+      <div class="grid">
+        <div class="card stack">
+          <h2>Claude</h2>
+          <label>显示名称<input id="claudeName" placeholder="如：云逸 Claude"></label>
+          <label>API 地址<input id="claudeEndpoint" placeholder="https://yunyi.cfd/claude"></label>
+          <label>官网链接<input id="claudeHomepage" placeholder="https://yunyi.cfd"></label>
+        </div>
+        <div class="card stack">
+          <h2>Codex</h2>
+          <label>显示名称<input id="codexName" placeholder="如：云逸 Codex"></label>
+          <label>API 地址<input id="codexEndpoint" placeholder="https://yunyi.cfd/codex"></label>
+          <label>官网链接<input id="codexHomepage" placeholder="https://yunyi.cfd"></label>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" type="button" onclick="saveSettings()">保存配置</button>
+      </div>
+    </section>
+
+    <section id="panel-balance" class="panel">
+      <div class="grid">
+        <div class="card stack">
+          <h2>接口配置</h2>
+          <label>余额查询接口<input id="balanceApiUrl" placeholder="https://yunyi.cfd/user/api/v1/me?view=dashboard"></label>
+          <label>模型统计接口<input id="modelTrendsApiUrl" placeholder="https://yunyi.cfd/user/api/v1/usage/model-trends?period=24h"></label>
+          <label>24 小时用量接口<input id="usageHistoryApiUrl" placeholder="https://yunyi.cfd/user/api/v1/usage/history?period=24h"></label>
+          <div class="actions">
+            <button class="primary" type="button" onclick="saveSettings()">保存配置</button>
+          </div>
+        </div>
+        <div class="card stack">
+          <h2>查询测试</h2>
+          <label>测试卡密<input id="testApiKey" type="password" placeholder="输入一张卡密测试当前接口"></label>
+          <div class="actions">
+            <button class="secondary" type="button" onclick="testBalance()">测试余额查询</button>
+          </div>
+          <div id="testResult" class="test-result">未测试</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-downloads" class="panel">
+      <div class="grid">
+        <div class="card stack">
+          <h2>当前下载</h2>
+          <label>下载按钮文案<input id="downloadLabel" placeholder="如：下载 CC-Switch"></label>
+          <div class="muted" id="currentPackage">-</div>
+          <div class="actions">
+            <button class="primary" type="button" onclick="saveSettings()">保存文案</button>
+          </div>
+        </div>
+        <div class="card stack">
+          <h2>上传新包</h2>
+          <label>CC-Switch 安装包<input id="downloadFile" type="file"></label>
+          <div class="actions">
+            <button class="secondary" type="button" onclick="uploadPackage()">上传并启用</button>
           </div>
         </div>
       </div>
-
-      <div class="login">
-        <input id="adminUser" placeholder="后台用户名" value="admin">
-        <input id="adminPass" type="password" placeholder="后台密码">
-        <input id="siteDomainView" placeholder="站点域名预览" disabled>
-        <button class="secondary" type="button" onclick="loadSettings()">登录并加载</button>
+      <div class="card" style="margin-top:16px;">
+        <h2>历史下载包</h2>
+        <div id="packageList" class="muted" style="margin-top:10px;">未加载</div>
       </div>
-
-      <div class="grid">
-        <div class="card">
-          <h2>站点信息</h2>
-          <label>品牌名<input id="brandName" placeholder="如：云逸"></label>
-          <label>站点域名<input id="siteDomain" placeholder="如：yunyi.hstudy.xyz"></label>
-          <label>公告<textarea id="announcement" placeholder="首页公告内容"></textarea></label>
-          <label>购买卡密地址<input id="buyUrl" placeholder="购买地址"></label>
-          <label>余额查询接口<input id="balanceApiUrl" placeholder="https://yunyi.cfd/user/api/v1/me?view=dashboard"></label>
-          <label>模型统计接口<input id="modelTrendsApiUrl" placeholder="https://yunyi.cfd/user/api/v1/usage/model-trends?period=24h"></label>
-          <label>24小时用量接口<input id="usageHistoryApiUrl" placeholder="https://yunyi.cfd/user/api/v1/usage/history?period=24h"></label>
-        </div>
-
-        <div class="card">
-          <h2>下载与导入配置</h2>
-          <label>下载按钮文案<input id="downloadLabel" placeholder="如：下载 CC-Switch"></label>
-          <label>Claude 显示名称<input id="claudeName" placeholder="如：云逸Claude"></label>
-          <label>Claude API 地址<input id="claudeEndpoint" placeholder="https://yunyi.cfd/claude"></label>
-          <label>Claude 官网链接<input id="claudeHomepage" placeholder="https://yunyi.cfd"></label>
-          <label>Codex 显示名称<input id="codexName" placeholder="如：云逸Codex"></label>
-          <label>Codex API 地址<input id="codexEndpoint" placeholder="https://yunyi.cfd/codex"></label>
-          <label>Codex 官网链接<input id="codexHomepage" placeholder="https://yunyi.cfd"></label>
-          <label>上传 CC-Switch 安装包<input id="downloadFile" type="file"></label>
-          <div class="tip">上传新安装包后，首页和教程页的下载按钮会自动指向最新文件。</div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" type="button" onclick="saveSettings()">保存配置</button>
-        <button class="secondary" type="button" onclick="uploadPackage()">上传安装包</button>
-      </div>
-
-      <div class="ok" id="status">先输入后台用户名和密码，再点击“登录并加载”。</div>
     </section>
+
+    <div class="status" id="status">输入后台用户名和密码后，点击“登录并加载”。</div>
   </main>
 
   <script>
+    let currentSettings = {};
+    let currentPackages = [];
+
     function authHeader() {
       const user = document.getElementById('adminUser').value.trim();
       const pass = document.getElementById('adminPass').value;
@@ -259,81 +433,205 @@
       }
       const response = await fetch(url, { ...options, headers });
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || `HTTP ${response.status}`);
+        const data = await response.json().catch(() => null);
+        throw new Error((data && data.detail) || `HTTP ${response.status}`);
       }
       return response.json();
     }
 
-    function fill(settings) {
-      document.getElementById('brandName').value = settings.brandName || '';
-      document.getElementById('siteDomain').value = settings.siteDomain || '';
-      document.getElementById('siteDomainView').value = settings.siteDomain || '';
-      document.getElementById('announcement').value = settings.announcement || '';
-      document.getElementById('buyUrl').value = settings.buyUrl || '';
-      document.getElementById('balanceApiUrl').value = settings.balanceApiUrl || '';
-      document.getElementById('modelTrendsApiUrl').value = settings.modelTrendsApiUrl || '';
-      document.getElementById('usageHistoryApiUrl').value = settings.usageHistoryApiUrl || '';
-      document.getElementById('downloadLabel').value = settings.downloadLabel || '';
-      document.getElementById('claudeName').value = settings.claudeName || '';
-      document.getElementById('claudeEndpoint').value = settings.claudeEndpoint || '';
-      document.getElementById('claudeHomepage').value = settings.claudeHomepage || '';
-      document.getElementById('codexName').value = settings.codexName || '';
-      document.getElementById('codexEndpoint').value = settings.codexEndpoint || '';
-      document.getElementById('codexHomepage').value = settings.codexHomepage || '';
+    function setStatus(message, type = '') {
+      const status = document.getElementById('status');
+      status.className = `status ${type}`.trim();
+      status.textContent = message;
     }
 
-    async function loadSettings() {
-      const status = document.getElementById('status');
-      status.textContent = '正在加载配置...';
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach((tab) => {
+        tab.classList.toggle('active', tab.dataset.tab === name);
+      });
+      document.querySelectorAll('.panel').forEach((panel) => {
+        panel.classList.toggle('active', panel.id === `panel-${name}`);
+      });
+    }
+
+    function fmtBytes(bytes) {
+      const value = Number(bytes || 0);
+      if (value >= 1024 * 1024) return `${(value / 1024 / 1024).toFixed(1)} MB`;
+      if (value >= 1024) return `${(value / 1024).toFixed(1)} KB`;
+      return `${value} B`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    function validateUrlField(id, label, requireHttps = false) {
+      const value = document.getElementById(id).value.trim();
+      if (!value) return value;
+      let parsed;
+      try {
+        parsed = new URL(value);
+      } catch {
+        throw new Error(`${label} 格式不正确`);
+      }
+      if (requireHttps && parsed.protocol !== 'https:') {
+        throw new Error(`${label} 必须使用 https`);
+      }
+      if (!requireHttps && !['http:', 'https:'].includes(parsed.protocol)) {
+        throw new Error(`${label} 必须使用 http 或 https`);
+      }
+      return value;
+    }
+
+    function fill(settings) {
+      currentSettings = settings || {};
+      document.getElementById('brandName').value = currentSettings.brandName || '';
+      document.getElementById('siteDomain').value = currentSettings.siteDomain || '';
+      document.getElementById('announcement').value = currentSettings.announcement || '';
+      document.getElementById('buyUrl').value = currentSettings.buyUrl || '';
+      document.getElementById('balanceApiUrl').value = currentSettings.balanceApiUrl || '';
+      document.getElementById('modelTrendsApiUrl').value = currentSettings.modelTrendsApiUrl || '';
+      document.getElementById('usageHistoryApiUrl').value = currentSettings.usageHistoryApiUrl || '';
+      document.getElementById('downloadLabel').value = currentSettings.downloadLabel || '';
+      document.getElementById('claudeName').value = currentSettings.claudeName || '';
+      document.getElementById('claudeEndpoint').value = currentSettings.claudeEndpoint || '';
+      document.getElementById('claudeHomepage').value = currentSettings.claudeHomepage || '';
+      document.getElementById('codexName').value = currentSettings.codexName || '';
+      document.getElementById('codexEndpoint').value = currentSettings.codexEndpoint || '';
+      document.getElementById('codexHomepage').value = currentSettings.codexHomepage || '';
+      renderDashboard();
+    }
+
+    function renderDashboard() {
+      const pack = currentSettings.downloadPackage || {};
+      document.getElementById('dashBrand').textContent = currentSettings.brandName || '-';
+      document.getElementById('dashDomain').textContent = currentSettings.siteDomain || '-';
+      document.getElementById('dashPackage').textContent = pack.originalName || currentSettings.downloadFilename || '-';
+      document.getElementById('dashUpdated').textContent = currentSettings.updatedAt || '-';
+      document.getElementById('dashClaude').textContent = `${currentSettings.claudeName || '-'}\n${currentSettings.claudeEndpoint || '-'}`;
+      document.getElementById('dashCodex').textContent = `${currentSettings.codexName || '-'}\n${currentSettings.codexEndpoint || '-'}`;
+      document.getElementById('currentPackage').textContent = pack.originalName
+        ? `${pack.originalName}，${fmtBytes(pack.sizeBytes)}，上传于 ${pack.uploadedAt}`
+        : (currentSettings.downloadFilename || '暂未记录下载包');
+    }
+
+    function renderPackages(items) {
+      currentPackages = items || [];
+      const list = document.getElementById('packageList');
+      if (!currentPackages.length) {
+        list.textContent = '暂无下载包记录。';
+        return;
+      }
+      list.innerHTML = currentPackages.map((item) => `
+        <div class="package-row">
+          <div>
+            <div class="package-name">${escapeHtml(item.originalName || item.filename)}</div>
+            <div class="muted">${escapeHtml(item.filename)}${item.active ? ' <span class="badge">当前使用</span>' : ''}</div>
+          </div>
+          <div>${fmtBytes(item.sizeBytes)}</div>
+          <div>${item.uploadedAt || '-'}</div>
+          <div class="actions" style="margin:0;">
+            ${item.active ? '' : `<button class="secondary" type="button" onclick="activatePackage(${item.id})">启用</button>`}
+            ${item.active ? '' : `<button class="danger" type="button" onclick="deletePackage(${item.id})">删除</button>`}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadAll() {
+      setStatus('正在加载后台配置...');
       try {
         const data = await adminFetch('/api/admin/site-settings');
         fill(data.settings || {});
-        status.textContent = '配置已加载。';
+        await loadPackages();
+        setStatus('配置已加载。', 'ok');
       } catch (err) {
-        status.textContent = `加载失败：${err.message}`;
+        setStatus(`加载失败：${err.message}`, 'error');
       }
     }
 
+    async function loadPackages() {
+      const data = await adminFetch('/api/admin/download-packages');
+      renderPackages(data.items || []);
+    }
+
     async function saveSettings() {
-      const status = document.getElementById('status');
-      status.textContent = '正在保存配置...';
+      setStatus('正在保存配置...');
       try {
         const payload = {
           brandName: document.getElementById('brandName').value.trim(),
           siteDomain: document.getElementById('siteDomain').value.trim(),
           announcement: document.getElementById('announcement').value.trim(),
-          buyUrl: document.getElementById('buyUrl').value.trim(),
-          balanceApiUrl: document.getElementById('balanceApiUrl').value.trim(),
-          modelTrendsApiUrl: document.getElementById('modelTrendsApiUrl').value.trim(),
-          usageHistoryApiUrl: document.getElementById('usageHistoryApiUrl').value.trim(),
+          buyUrl: validateUrlField('buyUrl', '购买地址'),
+          balanceApiUrl: validateUrlField('balanceApiUrl', '余额查询接口', true),
+          modelTrendsApiUrl: validateUrlField('modelTrendsApiUrl', '模型统计接口', true),
+          usageHistoryApiUrl: validateUrlField('usageHistoryApiUrl', '24 小时用量接口', true),
           downloadLabel: document.getElementById('downloadLabel').value.trim(),
           claudeName: document.getElementById('claudeName').value.trim(),
-          claudeEndpoint: document.getElementById('claudeEndpoint').value.trim(),
-          claudeHomepage: document.getElementById('claudeHomepage').value.trim(),
+          claudeEndpoint: validateUrlField('claudeEndpoint', 'Claude API 地址', true),
+          claudeHomepage: validateUrlField('claudeHomepage', 'Claude 官网链接'),
           codexName: document.getElementById('codexName').value.trim(),
-          codexEndpoint: document.getElementById('codexEndpoint').value.trim(),
-          codexHomepage: document.getElementById('codexHomepage').value.trim()
+          codexEndpoint: validateUrlField('codexEndpoint', 'Codex API 地址', true),
+          codexHomepage: validateUrlField('codexHomepage', 'Codex 官网链接')
         };
         const data = await adminFetch('/api/admin/site-settings', {
           method: 'PUT',
           body: JSON.stringify(payload)
         });
         fill(data.settings || {});
-        status.textContent = '配置已保存。';
+        setStatus('配置已保存。', 'ok');
       } catch (err) {
-        status.textContent = `保存失败：${err.message}`;
+        setStatus(`保存失败：${err.message}`, 'error');
+      }
+    }
+
+    async function testBalance() {
+      const apiKey = document.getElementById('testApiKey').value.trim();
+      const result = document.getElementById('testResult');
+      if (!apiKey) {
+        result.textContent = '请先输入测试卡密。';
+        return;
+      }
+      result.textContent = '正在测试...';
+      try {
+        const response = await fetch('/api/balance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.detail || `HTTP ${response.status}`);
+        }
+        const balance = data.balance || {};
+        const quota = balance.quota || {};
+        result.textContent = [
+          '测试成功',
+          `套餐：${balance.planName || '-'}`,
+          `类型：${balance.billingType || '-'}`,
+          `剩余：${quota.remaining ?? '-'}`,
+          `总量：${quota.total ?? '-'}`,
+          `模型统计：${data.modelTrends && data.modelTrends.models ? '正常' : '无数据'}`,
+          `24 小时用量：${data.usageHistory && data.usageHistory.totals ? '正常' : '无数据'}`
+        ].join('\n');
+      } catch (err) {
+        result.textContent = `测试失败：${err.message}`;
       }
     }
 
     async function uploadPackage() {
-      const status = document.getElementById('status');
       const file = document.getElementById('downloadFile').files[0];
       if (!file) {
-        status.textContent = '请先选择一个安装包文件。';
+        setStatus('请先选择一个安装包文件。', 'warn');
         return;
       }
-      status.textContent = '正在上传安装包...';
+      setStatus('正在上传安装包...');
       try {
         const form = new FormData();
         form.append('file', file);
@@ -342,9 +640,35 @@
           body: form
         });
         fill(data.settings || {});
-        status.textContent = '安装包已上传，前台下载按钮已自动更新。';
+        renderPackages(data.packages || []);
+        document.getElementById('downloadFile').value = '';
+        setStatus('安装包已上传并启用。', 'ok');
       } catch (err) {
-        status.textContent = `上传失败：${err.message}`;
+        setStatus(`上传失败：${err.message}`, 'error');
+      }
+    }
+
+    async function activatePackage(id) {
+      setStatus('正在切换下载包...');
+      try {
+        const data = await adminFetch(`/api/admin/download-package/${id}/activate`, { method: 'POST' });
+        fill(data.settings || {});
+        renderPackages(data.packages || []);
+        setStatus('下载包已切换。', 'ok');
+      } catch (err) {
+        setStatus(`切换失败：${err.message}`, 'error');
+      }
+    }
+
+    async function deletePackage(id) {
+      if (!confirm('确定删除这个历史安装包吗？')) return;
+      setStatus('正在删除下载包...');
+      try {
+        const data = await adminFetch(`/api/admin/download-package/${id}`, { method: 'DELETE' });
+        renderPackages(data.items || []);
+        setStatus('下载包已删除。', 'ok');
+      } catch (err) {
+        setStatus(`删除失败：${err.message}`, 'error');
       }
     }
   </script>

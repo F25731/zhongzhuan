@@ -84,7 +84,7 @@ SITE_ADMIN_PASSWORD: ${SITE_ADMIN_PASSWORD:-change-me}
 - 余额查询接口
 - 模型统计接口
 - 24 小时用量接口
-- CC-Switch 下载包
+- CC-Switch 下载包、当前包记录和历史包管理
 
 ## 部署建议
 

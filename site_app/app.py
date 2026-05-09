@@ -70,6 +70,18 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            create table if not exists download_packages (
+                id integer primary key autoincrement,
+                filename text not null unique,
+                original_name text not null,
+                size_bytes integer not null default 0,
+                uploaded_at text not null,
+                active integer not null default 0
+            )
+            """
+        )
 
 
 @app.on_event("startup")
@@ -100,6 +112,10 @@ def set_config(key: str, value: Any) -> None:
         )
 
 
+def now_text() -> str:
+    return datetime.now(BEIJING_TZ).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def require_admin(credentials: HTTPBasicCredentials = Depends(security)) -> str:
     valid_user = secrets.compare_digest(credentials.username, ADMIN_USER)
     valid_pass = secrets.compare_digest(credentials.password, ADMIN_PASSWORD)
@@ -110,6 +126,77 @@ def require_admin(credentials: HTTPBasicCredentials = Depends(security)) -> str:
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
+
+
+def row_to_download_package(row: sqlite3.Row) -> Dict[str, Any]:
+    filename = row["filename"]
+    return {
+        "id": row["id"],
+        "filename": filename,
+        "originalName": row["original_name"],
+        "sizeBytes": row["size_bytes"],
+        "uploadedAt": row["uploaded_at"],
+        "active": bool(row["active"]),
+        "downloadUrl": f"/downloads/{filename}",
+    }
+
+
+def list_download_packages() -> list[Dict[str, Any]]:
+    init_db()
+    with db() as conn:
+        rows = conn.execute(
+            """
+            select * from download_packages
+            order by active desc, uploaded_at desc, id desc
+            """
+        ).fetchall()
+    return [row_to_download_package(row) for row in rows]
+
+
+def active_download_package() -> Optional[Dict[str, Any]]:
+    init_db()
+    with db() as conn:
+        row = conn.execute(
+            """
+            select * from download_packages
+            where active = 1
+            order by uploaded_at desc, id desc
+            limit 1
+            """
+        ).fetchone()
+    return row_to_download_package(row) if row else None
+
+
+def download_target(filename: str) -> Path:
+    target = (DOWNLOAD_DIR / filename).resolve()
+    root = DOWNLOAD_DIR.resolve()
+    if root != target and root not in target.parents:
+        raise HTTPException(status_code=404, detail="download not found")
+    return target
+
+
+def ensure_download_package_record(settings: Dict[str, Any]) -> None:
+    filename = str(settings.get("downloadFilename") or "").strip()
+    if not filename:
+        return
+    target = download_target(filename)
+    if not target.exists() or not target.is_file():
+        return
+    with db() as conn:
+        existing = conn.execute(
+            "select id from download_packages where filename = ?",
+            (filename,),
+        ).fetchone()
+        if existing:
+            return
+        has_active = conn.execute("select count(*) as c from download_packages where active = 1").fetchone()["c"]
+        conn.execute(
+            """
+            insert into download_packages(filename, original_name, size_bytes, uploaded_at, active)
+            values(?, ?, ?, ?, ?)
+            """,
+            (filename, filename, target.stat().st_size, now_text(), 0 if has_active else 1),
+        )
 
 
 def default_site_settings() -> Dict[str, Any]:
@@ -136,9 +223,23 @@ def default_site_settings() -> Dict[str, Any]:
 def get_site_settings() -> Dict[str, Any]:
     saved = get_config("site_settings", {}) or {}
     settings = {**default_site_settings(), **saved}
+    settings.pop("downloadPackage", None)
+    settings.pop("downloadUrl", None)
+    ensure_download_package_record(settings)
+    package = active_download_package()
+    if package:
+        settings["downloadFilename"] = package["filename"]
+        settings["downloadPackage"] = package
     filename = str(settings.get("downloadFilename") or "").strip()
     settings["downloadUrl"] = f"/downloads/{filename}" if filename else ""
     return settings
+
+
+def save_site_settings(settings: Dict[str, Any]) -> None:
+    clean = dict(settings)
+    clean.pop("downloadPackage", None)
+    clean.pop("downloadUrl", None)
+    set_config("site_settings", clean)
 
 
 def public_site_settings() -> Dict[str, Any]:
@@ -304,6 +405,16 @@ def validate_upstream_https(url: str, label: str) -> None:
         raise HTTPException(status_code=500, detail=f"{label} must use https")
 
 
+def validate_http_url(url: str, label: str, *, require_https: bool = False) -> None:
+    if not url:
+        return
+    parsed = urlparse(url)
+    allowed = {"https"} if require_https else {"http", "https"}
+    if parsed.scheme not in allowed or not parsed.netloc:
+        scheme = "https" if require_https else "http(s)"
+        raise HTTPException(status_code=400, detail=f"{label} must be a valid {scheme} url")
+
+
 async def get_upstream_with_retry(
     client: httpx.AsyncClient,
     url: str,
@@ -354,7 +465,7 @@ app.mount("/static", StaticFiles(directory=APP_DIR / "static"), name="static")
 
 @app.get("/downloads/{filename}")
 async def download_file(filename: str) -> FileResponse:
-    target = DOWNLOAD_DIR / filename
+    target = download_target(filename)
     if not target.exists() or not target.is_file():
         raise HTTPException(status_code=404, detail="download not found")
     return FileResponse(target, filename=target.name)
@@ -429,27 +540,49 @@ async def api_admin_site_settings(_: str = Depends(require_admin)) -> Dict[str, 
 @app.put("/api/admin/site-settings")
 async def api_admin_update_site_settings(payload: Dict[str, Any], _: str = Depends(require_admin)) -> Dict[str, Any]:
     current = get_site_settings()
+    balance_api_url = str(payload.get("balanceApiUrl") or current.get("balanceApiUrl", default_site_settings()["balanceApiUrl"])).strip()
+    model_trends_api_url = str(payload.get("modelTrendsApiUrl") or current.get("modelTrendsApiUrl", default_site_settings()["modelTrendsApiUrl"])).strip()
+    usage_history_api_url = str(payload.get("usageHistoryApiUrl") or current.get("usageHistoryApiUrl", default_site_settings()["usageHistoryApiUrl"])).strip()
+    buy_url = str(payload.get("buyUrl") or "").strip()
+    claude_endpoint = str(payload.get("claudeEndpoint") or current["claudeEndpoint"]).strip() or current["claudeEndpoint"]
+    claude_homepage = str(payload.get("claudeHomepage") or current.get("claudeHomepage", "")).strip()
+    codex_endpoint = str(payload.get("codexEndpoint") or current["codexEndpoint"]).strip() or current["codexEndpoint"]
+    codex_homepage = str(payload.get("codexHomepage") or current.get("codexHomepage", "")).strip()
+    validate_http_url(buy_url, "buy url")
+    validate_http_url(balance_api_url, "balance api url", require_https=True)
+    validate_http_url(model_trends_api_url, "model trends api url", require_https=True)
+    validate_http_url(usage_history_api_url, "usage history api url", require_https=True)
+    validate_http_url(claude_endpoint, "claude endpoint", require_https=True)
+    validate_http_url(claude_homepage, "claude homepage")
+    validate_http_url(codex_endpoint, "codex endpoint", require_https=True)
+    validate_http_url(codex_homepage, "codex homepage")
     updated = {
         **current,
         "brandName": str(payload.get("brandName") or current["brandName"]).strip() or current["brandName"],
         "siteDomain": str(payload.get("siteDomain") or current["siteDomain"]).strip() or current["siteDomain"],
         "announcement": str(payload.get("announcement") or "").strip(),
-        "buyUrl": str(payload.get("buyUrl") or "").strip(),
-        "balanceApiUrl": str(payload.get("balanceApiUrl") or current.get("balanceApiUrl", default_site_settings()["balanceApiUrl"])).strip(),
-        "modelTrendsApiUrl": str(payload.get("modelTrendsApiUrl") or current.get("modelTrendsApiUrl", default_site_settings()["modelTrendsApiUrl"])).strip(),
-        "usageHistoryApiUrl": str(payload.get("usageHistoryApiUrl") or current.get("usageHistoryApiUrl", default_site_settings()["usageHistoryApiUrl"])).strip(),
+        "buyUrl": buy_url,
+        "balanceApiUrl": balance_api_url,
+        "modelTrendsApiUrl": model_trends_api_url,
+        "usageHistoryApiUrl": usage_history_api_url,
         "downloadLabel": str(payload.get("downloadLabel") or current["downloadLabel"]).strip() or current["downloadLabel"],
         "claudeName": str(payload.get("claudeName") or current["claudeName"]).strip() or current["claudeName"],
-        "claudeEndpoint": str(payload.get("claudeEndpoint") or current["claudeEndpoint"]).strip() or current["claudeEndpoint"],
-        "claudeHomepage": str(payload.get("claudeHomepage") or current.get("claudeHomepage", "")).strip(),
+        "claudeEndpoint": claude_endpoint,
+        "claudeHomepage": claude_homepage,
         "codexName": str(payload.get("codexName") or current["codexName"]).strip() or current["codexName"],
-        "codexEndpoint": str(payload.get("codexEndpoint") or current["codexEndpoint"]).strip() or current["codexEndpoint"],
-        "codexHomepage": str(payload.get("codexHomepage") or current.get("codexHomepage", "")).strip(),
+        "codexEndpoint": codex_endpoint,
+        "codexHomepage": codex_homepage,
         "downloadFilename": current.get("downloadFilename", ""),
         "downloadUrl": current.get("downloadUrl", ""),
+        "updatedAt": now_text(),
     }
-    set_config("site_settings", updated)
+    save_site_settings(updated)
     return {"settings": get_site_settings()}
+
+
+@app.get("/api/admin/download-packages")
+async def api_admin_download_packages(_: str = Depends(require_admin)) -> Dict[str, Any]:
+    return {"items": list_download_packages(), "active": active_download_package()}
 
 
 @app.post("/api/admin/download-package")
@@ -462,11 +595,56 @@ async def api_admin_upload_download_package(
     suffix = Path(file.filename).suffix.lower()
     if suffix not in {".msi", ".zip", ".exe", ".dmg", ".pkg", ".deb", ".rpm", ".appimage"}:
         raise HTTPException(status_code=400, detail="unsupported file type")
+    original_name = Path(file.filename).name
     safe_name = f"{uuid.uuid4().hex}{suffix}"
-    target = DOWNLOAD_DIR / safe_name
+    target = download_target(safe_name)
     with target.open("wb") as fh:
         shutil.copyfileobj(file.file, fh)
+    size_bytes = target.stat().st_size
+    with db() as conn:
+        conn.execute("update download_packages set active = 0")
+        conn.execute(
+            """
+            insert into download_packages(filename, original_name, size_bytes, uploaded_at, active)
+            values(?, ?, ?, ?, 1)
+            """,
+            (safe_name, original_name, size_bytes, now_text()),
+        )
     settings = get_site_settings()
     settings["downloadFilename"] = safe_name
-    set_config("site_settings", settings)
-    return {"settings": get_site_settings()}
+    settings["updatedAt"] = now_text()
+    save_site_settings(settings)
+    return {"settings": get_site_settings(), "packages": list_download_packages()}
+
+
+@app.post("/api/admin/download-package/{package_id}/activate")
+async def api_admin_activate_download_package(package_id: int, _: str = Depends(require_admin)) -> Dict[str, Any]:
+    with db() as conn:
+        row = conn.execute("select * from download_packages where id = ?", (package_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="package not found")
+        target = download_target(row["filename"])
+        if not target.exists() or not target.is_file():
+            raise HTTPException(status_code=404, detail="package file missing")
+        conn.execute("update download_packages set active = 0")
+        conn.execute("update download_packages set active = 1 where id = ?", (package_id,))
+    settings = get_site_settings()
+    settings["downloadFilename"] = row["filename"]
+    settings["updatedAt"] = now_text()
+    save_site_settings(settings)
+    return {"settings": get_site_settings(), "packages": list_download_packages()}
+
+
+@app.delete("/api/admin/download-package/{package_id}")
+async def api_admin_delete_download_package(package_id: int, _: str = Depends(require_admin)) -> Dict[str, Any]:
+    with db() as conn:
+        row = conn.execute("select * from download_packages where id = ?", (package_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="package not found")
+        if row["active"]:
+            raise HTTPException(status_code=400, detail="active package cannot be deleted")
+        conn.execute("delete from download_packages where id = ?", (package_id,))
+    target = download_target(row["filename"])
+    if target.exists() and target.is_file():
+        target.unlink()
+    return {"items": list_download_packages(), "active": active_download_package()}
