@@ -555,7 +555,7 @@
       }
 
       const url = `ccswitch://v1/import?${params.toString()}`;
-      status.textContent = `正在唤起 CC-Switch：${url.replace(/apiKey=([^&]+)/, 'apiKey=[已打码]')}`;
+      status.textContent = '正在唤起 CC-Switch，请在浏览器弹窗中允许打开。';
       window.location.href = url;
     }
 
