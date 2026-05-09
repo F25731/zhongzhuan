@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import secrets
@@ -303,6 +304,31 @@ def validate_upstream_https(url: str, label: str) -> None:
         raise HTTPException(status_code=500, detail=f"{label} must use https")
 
 
+async def get_upstream_with_retry(
+    client: httpx.AsyncClient,
+    url: str,
+    headers: Dict[str, str],
+    label: str,
+    *,
+    attempts: int = 3,
+) -> httpx.Response:
+    last_error: Exception | None = None
+    last_response: httpx.Response | None = None
+    for attempt in range(attempts):
+        try:
+            response = await client.get(url, headers=headers)
+            if response.status_code < 500:
+                return response
+            last_response = response
+        except httpx.HTTPError as exc:
+            last_error = exc
+        if attempt < attempts - 1:
+            await asyncio.sleep(0.4 * (attempt + 1))
+    if last_response is not None:
+        return last_response
+    raise HTTPException(status_code=502, detail=f"{label} query failed") from last_error
+
+
 @app.get("/")
 async def index() -> FileResponse:
     return FileResponse(APP_DIR / "static" / "index.html")
@@ -356,17 +382,20 @@ async def api_balance(payload: Dict[str, Any]) -> Dict[str, Any]:
         "Authorization": f"Bearer {api_key}",
         "User-Agent": "yunyi-site/1.0",
     }
-    try:
-        async with httpx.AsyncClient(timeout=12) as client:
-            upstream = await client.get(balance_api_url, headers=headers)
-            trends_upstream = await client.get(model_trends_api_url, headers=headers)
-            history_upstream = await client.get(usage_history_api_url, headers=headers)
-    except httpx.HTTPError as exc:
-        raise HTTPException(status_code=502, detail="balance query failed") from exc
+    async with httpx.AsyncClient(timeout=12) as client:
+        upstream = await get_upstream_with_retry(client, balance_api_url, headers, "balance")
+        try:
+            trends_upstream = await get_upstream_with_retry(client, model_trends_api_url, headers, "model trends", attempts=2)
+        except HTTPException:
+            trends_upstream = None
+        try:
+            history_upstream = await get_upstream_with_retry(client, usage_history_api_url, headers, "usage history", attempts=2)
+        except HTTPException:
+            history_upstream = None
     if upstream.status_code in {401, 403}:
         raise HTTPException(status_code=401, detail="卡密无效或无权查询")
     if upstream.status_code >= 400:
-        raise HTTPException(status_code=502, detail="上级余额接口返回异常")
+        raise HTTPException(status_code=502, detail="上游查询繁忙，请稍后重试")
     try:
         data = upstream.json()
     except ValueError as exc:
@@ -375,14 +404,14 @@ async def api_balance(payload: Dict[str, Any]) -> Dict[str, Any]:
         raise HTTPException(status_code=502, detail="上级余额接口返回格式异常")
     trends = {}
     history = {}
-    if trends_upstream.status_code == 200:
+    if trends_upstream is not None and trends_upstream.status_code == 200:
         try:
             trends_data = trends_upstream.json()
             if isinstance(trends_data, dict):
                 trends = clean_model_trends_payload(trends_data)
         except ValueError:
             trends = {}
-    if history_upstream.status_code == 200:
+    if history_upstream is not None and history_upstream.status_code == 200:
         try:
             history_data = history_upstream.json()
             if isinstance(history_data, dict):

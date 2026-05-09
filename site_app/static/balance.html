@@ -340,6 +340,9 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
+          if (res.status === 502) {
+            throw new Error('上游查询繁忙，请稍后重试。');
+          }
           throw new Error(data.detail || `HTTP ${res.status}`);
         }
         renderBalance(data.balance || {}, data.modelTrends || {}, data.usageHistory || {});
