@@ -449,6 +449,55 @@
       codexHomepage: 'https://yunyi.cfd'
     };
 
+    function encodeBase64Unicode(text) {
+      const bytes = new TextEncoder().encode(text);
+      let binary = '';
+      bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+      return btoa(binary);
+    }
+
+    function rootFromUrl(url) {
+      try {
+        const parsed = new URL(url);
+        return `${parsed.protocol}//${parsed.host}`;
+      } catch {
+        return 'https://yunyi.cfd';
+      }
+    }
+
+    const usageQueryScript = `({
+  request: {
+    url: "{{baseUrl}}/user/api/v1/me",
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": "Bearer {{apiKey}}",
+      "User-Agent": "cc-switch/1.0"
+    }
+  },
+  extractor: function(response) {
+    const quota = response.quota || {};
+    const usage = response.usage || {};
+    const timestamps = response.timestamps || {};
+    return {
+      isValid: response.status === "active",
+      invalidMessage: response.status === "active" ? "" : "卡密状态异常：" + response.status,
+      planName: response.sub_service_type_name || response.service_type || "云逸套餐",
+      remaining: Number(quota.remaining_quota || 0),
+      used: Number(quota.used_quota || 0),
+      total: Number(quota.total_quota || 0),
+      unit: "额度",
+      extra: JSON.stringify({
+        使用率: (quota.used_percent ?? 0) + "%",
+        今日消耗: usage.daily_spent ?? 0,
+        请求次数: usage.request_count ?? 0,
+        总Token: usage.total_tokens ?? 0,
+        到期时间: timestamps.expires_at || ""
+      })
+    };
+  }
+})`;
+
     async function loadSettings() {
       try {
         const res = await fetch('/api/site-settings');
@@ -493,7 +542,12 @@
         enabled: 'true',
         name: config.name,
         apiKey,
-        endpoint: config.endpoint
+        endpoint: config.endpoint,
+        usageEnabled: 'true',
+        usageApiKey: apiKey,
+        usageBaseUrl: rootFromUrl(config.endpoint),
+        usageScript: encodeBase64Unicode(usageQueryScript),
+        usageAutoInterval: '10'
       });
 
       if (config.homepage) {

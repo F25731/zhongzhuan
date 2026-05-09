@@ -12,6 +12,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 try:
     from zoneinfo import ZoneInfo
@@ -264,6 +265,7 @@ def default_site_settings() -> Dict[str, Any]:
         "announcement": "导入前请先安装 CC-Switch。卡密会在浏览器本地生成导入链接并写入本机 CC-Switch；导入后如未生效，请在 CC-Switch 中手动激活对应通道。",
         "buyUrl": "https://pay.ldxp.cn/shop/Q5L5OORI",
         "balanceApiUrl": "https://yunyi.cfd/user/api/v1/me",
+        "modelTrendsApiUrl": "https://yunyi.cfd/user/api/v1/usage/model-trends?period=24h",
         "downloadLabel": "下载 CC-Switch",
         "downloadFilename": "CC-Switch-v3.14.1-Windows_8.msi",
         "downloadUrl": "",
@@ -288,6 +290,7 @@ def get_site_settings() -> Dict[str, Any]:
 def public_site_settings() -> Dict[str, Any]:
     settings = get_site_settings()
     settings.pop("balanceApiUrl", None)
+    settings.pop("modelTrendsApiUrl", None)
     return settings
 
 
@@ -343,6 +346,50 @@ def clean_balance_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
             "remainingSeconds": remaining_seconds,
         },
     }
+
+
+def clean_model_trends_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+    rows = payload.get("data") if isinstance(payload.get("data"), list) else []
+    totals: Dict[str, Dict[str, Any]] = {}
+    hourly: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        models = row.get("models") if isinstance(row.get("models"), list) else []
+        clean_models = []
+        for item in models:
+            if not isinstance(item, dict):
+                continue
+            model = str(item.get("model") or "unknown")
+            tokens = int(item.get("total_tokens") or 0)
+            cost = int(item.get("cost") or 0)
+            requests = int(item.get("requests") or 0)
+            clean_item = {
+                "model": model,
+                "totalTokens": tokens,
+                "cost": cost,
+                "requests": requests,
+            }
+            clean_models.append(clean_item)
+            bucket = totals.setdefault(model, {"model": model, "totalTokens": 0, "cost": 0, "requests": 0})
+            bucket["totalTokens"] += tokens
+            bucket["cost"] += cost
+            bucket["requests"] += requests
+        if clean_models:
+            hourly.append({"date": row.get("date", ""), "models": clean_models})
+    ranking = sorted(totals.values(), key=lambda item: (item["cost"], item["totalTokens"]), reverse=True)
+    return {
+        "period": payload.get("period", "24h"),
+        "keyCount": payload.get("key_count", 1),
+        "models": ranking,
+        "hourly": hourly,
+    }
+
+
+def validate_upstream_https(url: str, label: str) -> None:
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise HTTPException(status_code=500, detail=f"{label} must use https")
 
 
 async def save_upload(upload: Optional[UploadFile], subdir: str) -> str:
@@ -532,18 +579,21 @@ async def api_balance(payload: Dict[str, Any]) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail="api key required")
     settings = get_site_settings()
     balance_api_url = str(settings.get("balanceApiUrl") or default_site_settings()["balanceApiUrl"]).strip()
-    if not balance_api_url.startswith("https://"):
-        raise HTTPException(status_code=500, detail="balance api url must use https")
+    model_trends_api_url = str(settings.get("modelTrendsApiUrl") or default_site_settings()["modelTrendsApiUrl"]).strip()
+    validate_upstream_https(balance_api_url, "balance api url")
+    validate_upstream_https(model_trends_api_url, "model trends api url")
     try:
         async with httpx.AsyncClient(timeout=12) as client:
+            headers = {
+                "Accept": "application/json",
+                "Authorization": f"Bearer {api_key}",
+                "User-Agent": "yunyi-site/1.0",
+            }
             upstream = await client.get(
                 balance_api_url,
-                headers={
-                    "Accept": "application/json",
-                    "Authorization": f"Bearer {api_key}",
-                    "User-Agent": "yunyi-site/1.0",
-                },
+                headers=headers,
             )
+            trends_upstream = await client.get(model_trends_api_url, headers=headers)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail="balance query failed") from exc
     if upstream.status_code in {401, 403}:
@@ -556,7 +606,15 @@ async def api_balance(payload: Dict[str, Any]) -> Dict[str, Any]:
         raise HTTPException(status_code=502, detail="上级余额接口返回格式异常") from exc
     if not isinstance(data, dict):
         raise HTTPException(status_code=502, detail="上级余额接口返回格式异常")
-    return {"balance": clean_balance_payload(data)}
+    trends = {}
+    if trends_upstream.status_code == 200:
+        try:
+            trends_data = trends_upstream.json()
+            if isinstance(trends_data, dict):
+                trends = clean_model_trends_payload(trends_data)
+        except ValueError:
+            trends = {}
+    return {"balance": clean_balance_payload(data), "modelTrends": trends}
 
 
 @app.get("/api/admin/site-settings")
@@ -574,6 +632,7 @@ async def api_admin_update_site_settings(payload: Dict[str, Any], _: str = Depen
         "announcement": str(payload.get("announcement") or "").strip(),
         "buyUrl": str(payload.get("buyUrl") or "").strip(),
         "balanceApiUrl": str(payload.get("balanceApiUrl") or current.get("balanceApiUrl", default_site_settings()["balanceApiUrl"])).strip(),
+        "modelTrendsApiUrl": str(payload.get("modelTrendsApiUrl") or current.get("modelTrendsApiUrl", default_site_settings()["modelTrendsApiUrl"])).strip(),
         "downloadLabel": str(payload.get("downloadLabel") or current["downloadLabel"]).strip() or current["downloadLabel"],
         "claudeName": str(payload.get("claudeName") or current["claudeName"]).strip() or current["claudeName"],
         "claudeEndpoint": str(payload.get("claudeEndpoint") or current["claudeEndpoint"]).strip() or current["claudeEndpoint"],

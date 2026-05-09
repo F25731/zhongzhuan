@@ -217,6 +217,7 @@
           <label>公告<textarea id="announcement" placeholder="首页公告内容"></textarea></label>
           <label>购买卡密地址<input id="buyUrl" placeholder="购买地址"></label>
           <label>余额查询接口<input id="balanceApiUrl" placeholder="https://yunyi.cfd/user/api/v1/me"></label>
+          <label>模型统计接口<input id="modelTrendsApiUrl" placeholder="https://yunyi.cfd/user/api/v1/usage/model-trends?period=24h"></label>
         </div>
 
         <div class="card">
@@ -270,6 +271,7 @@
       document.getElementById('announcement').value = settings.announcement || '';
       document.getElementById('buyUrl').value = settings.buyUrl || '';
       document.getElementById('balanceApiUrl').value = settings.balanceApiUrl || '';
+      document.getElementById('modelTrendsApiUrl').value = settings.modelTrendsApiUrl || '';
       document.getElementById('downloadLabel').value = settings.downloadLabel || '';
       document.getElementById('claudeName').value = settings.claudeName || '';
       document.getElementById('claudeEndpoint').value = settings.claudeEndpoint || '';
@@ -301,6 +303,7 @@
           announcement: document.getElementById('announcement').value.trim(),
           buyUrl: document.getElementById('buyUrl').value.trim(),
           balanceApiUrl: document.getElementById('balanceApiUrl').value.trim(),
+          modelTrendsApiUrl: document.getElementById('modelTrendsApiUrl').value.trim(),
           downloadLabel: document.getElementById('downloadLabel').value.trim(),
           claudeName: document.getElementById('claudeName').value.trim(),
           claudeEndpoint: document.getElementById('claudeEndpoint').value.trim(),
