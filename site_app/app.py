@@ -494,6 +494,11 @@ async def balance() -> FileResponse:
     return FileResponse(APP_DIR / "static" / "balance.html")
 
 
+@app.get("/status")
+async def status() -> FileResponse:
+    return FileResponse(APP_DIR / "static" / "status.html")
+
+
 app.mount("/static", StaticFiles(directory=APP_DIR / "static"), name="static")
 
 
