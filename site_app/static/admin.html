@@ -1,9 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>站点后台</title>
+  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
+  <title>云逸后台</title>
   <style>
     :root {
       --bg: #0a0e1a;
@@ -399,8 +400,9 @@
   <main class="shell">
     <div class="topbar">
       <div class="brand">
+        <img src="/static/assets/yunyi-logo.svg" alt="云逸">
         <div>
-          <h1>站点后台</h1>
+          <h1>云逸后台</h1>
           <p class="muted">配置站点、导入参数、余额查询接口和 CC-Switch 下载包。</p>
         </div>
       </div>
@@ -448,9 +450,9 @@
       <div class="grid">
         <div class="card stack">
           <h2>基础信息</h2>
-          <label>品牌名<input id="brandName" placeholder="如：Relay"></label>
-          <label>站点域名<input id="siteDomain" placeholder="如：relay.example.com"></label>
-          <label>购买卡密地址<input id="buyUrl" placeholder="https://example.com/buy"></label>
+          <label>品牌名<input id="brandName" placeholder="如：云逸"></label>
+          <label>站点域名<input id="siteDomain" placeholder="如：yunyi.hstudy.xyz"></label>
+          <label>购买卡密地址<input id="buyUrl" placeholder="https://pay.ldxp.cn/shop/Q5L5OORI"></label>
         </div>
         <div class="card stack">
           <h2>公告</h2>
@@ -466,15 +468,15 @@
       <div class="grid">
         <div class="card stack">
           <h2>Claude</h2>
-          <label>显示名称<input id="claudeName" placeholder="如：Claude 通道"></label>
-          <label>API 地址<input id="claudeEndpoint" placeholder="https://api.example.com/claude"></label>
-          <label>官网链接<input id="claudeHomepage" placeholder="https://api.example.com"></label>
+          <label>显示名称<input id="claudeName" placeholder="如：云逸 Claude"></label>
+          <label>API 地址<input id="claudeEndpoint" placeholder="https://yunyi.cfd/claude"></label>
+          <label>官网链接<input id="claudeHomepage" placeholder="https://yunyi.cfd"></label>
         </div>
         <div class="card stack">
           <h2>Codex</h2>
-          <label>显示名称<input id="codexName" placeholder="如：Codex 通道"></label>
-          <label>API 地址<input id="codexEndpoint" placeholder="https://api.example.com/codex"></label>
-          <label>官网链接<input id="codexHomepage" placeholder="https://api.example.com"></label>
+          <label>显示名称<input id="codexName" placeholder="如：云逸 Codex"></label>
+          <label>API 地址<input id="codexEndpoint" placeholder="https://yunyi.cfd/codex"></label>
+          <label>官网链接<input id="codexHomepage" placeholder="https://yunyi.cfd"></label>
         </div>
       </div>
       <div class="actions">
@@ -486,9 +488,9 @@
       <div class="grid">
         <div class="card stack">
           <h2>接口配置</h2>
-          <label>余额查询接口<input id="balanceApiUrl" placeholder="https://api.example.com/user/api/v1/me?view=dashboard"></label>
-          <label>模型统计接口<input id="modelTrendsApiUrl" placeholder="https://api.example.com/user/api/v1/usage/model-trends?period=24h"></label>
-          <label>24 小时用量接口<input id="usageHistoryApiUrl" placeholder="https://api.example.com/user/api/v1/usage/history?period=24h"></label>
+          <label>余额查询接口<input id="balanceApiUrl" placeholder="https://yunyi.cfd/user/api/v1/me?view=dashboard"></label>
+          <label>模型统计接口<input id="modelTrendsApiUrl" placeholder="https://yunyi.cfd/user/api/v1/usage/model-trends?period=24h"></label>
+          <label>24 小时用量接口<input id="usageHistoryApiUrl" placeholder="https://yunyi.cfd/user/api/v1/usage/history?period=24h"></label>
           <div class="actions">
             <button class="primary" type="button" onclick="saveSettings()">保存配置</button>
           </div>
@@ -807,5 +809,3 @@
   </script>
 </body>
 </html>
-
-

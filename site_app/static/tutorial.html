@@ -1,9 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Relay | Claude / Codex 教程</title>
+  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
+  <title>云逸 | Claude / Codex 教程</title>
   <style>
     :root {
       --bg: #0a0e1a;
@@ -348,7 +349,7 @@
 <body>
   <main class="shell">
     <div class="topbar">
-      <div class="brand"><span id="brandTitle">使用教程</span></div>
+      <div class="brand"><img class="brand-logo" src="/static/assets/yunyi-logo.svg" alt="云逸"><span id="brandTitle">云逸教程</span></div>
       <div class="navlinks">
         <a href="/">首页导入</a>
         <a href="/balance">查余额</a>
@@ -358,9 +359,9 @@
     </div>
 
     <section class="hero">
-      <div class="kicker" id="heroKicker">Relay · Node.js + Git + CC-Switch</div>
+      <div class="kicker" id="heroKicker">云逸 · Node.js + Git + CC-Switch</div>
       <h1>先装环境，再一键导入，最后用 Claude Code 或 Codex</h1>
-      <p id="heroDesc">这是Relay的简化教程页，对外入口是 relay.example.com。流程只保留最需要的部分：先安装 Node.js、Git、CC-Switch，然后从首页一键导入通道。导入并激活成功后，客户端、VS Code 和终端 CLI 都可以用。</p>
+      <p id="heroDesc">这是云逸的简化教程页，对外入口是 yunyi.hstudy.xyz。流程只保留最需要的部分：先安装 Node.js、Git、CC-Switch，然后从首页一键导入通道。导入并激活成功后，客户端、VS Code 和终端 CLI 都可以用。</p>
       <div class="notice"><strong>说明：</strong>如果你已经装好了 Node.js 和 Git，可以直接跳到“导入到 CC-Switch”。如果 VS Code 已经开着，导入完成后建议重开一次窗口或终端。</div>
       <div class="jump-links">
         <a href="#prepare">先装环境</a>
@@ -453,8 +454,8 @@
         const res = await fetch('/api/site-settings');
         const data = await res.json();
         const settings = data.settings || {};
-        const brand = settings.brandName || 'Relay';
-        const domain = settings.siteDomain || 'relay.example.com';
+        const brand = settings.brandName || '云逸';
+        const domain = settings.siteDomain || 'yunyi.hstudy.xyz';
         document.title = `${brand} | Claude / Codex 教程`;
         document.getElementById('brandTitle').textContent = `${brand}教程`;
         document.getElementById('heroKicker').textContent = `${brand} · Node.js + Git + CC-Switch`;
@@ -477,5 +478,3 @@
   </script>
 </body>
 </html>
-
-

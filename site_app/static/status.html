@@ -1,9 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Relay | 运行状态</title>
+  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
+  <title>云逸 | 运行状态</title>
   <style>
     :root {
       --bg: #0a0e1a;
@@ -386,7 +387,7 @@
 <body>
   <main class="shell">
     <div class="topbar">
-      <div class="brand"><span>运行状态</span></div>
+      <div class="brand"><img class="brand-logo" src="/static/assets/yunyi-logo.svg" alt="云逸"><span>云逸运行状态</span></div>
       <div class="navlinks">
         <a href="/">首页导入</a>
         <a href="/balance">余额查询</a>
@@ -396,10 +397,10 @@
     </div>
 
     <section class="panel">
-      <div class="kicker">Relay · 实时状态与额度</div>
+      <div class="kicker">云逸 · 实时状态与额度</div>
       <h1>查询渠道运行状态</h1>
       <p class="intro">
-        实时监控Relay <b>Claude</b> 和 <b>Codex</b> 渠道的可用性、成功率和响应延迟。
+        实时监控云逸 <b>Claude</b> 和 <b>Codex</b> 渠道的可用性、成功率和响应延迟。
         数据每 30 秒自动刷新，确保您随时了解服务健康状况。
       </p>
 
@@ -458,7 +459,7 @@
     const WINDOW_LABEL = { 1: '1 分钟', 5: '5 分钟', 30: '30 分钟', 60: '1 小时', 360: '6 小时', 720: '最近 12 小时', 1440: '最近 24 小时', 4320: '最近 3 天', 10080: '最近 7 天' };
 
     function renderCard(channel) {
-      const name = (channel.name || 'unknown').replace(/Relay/g, 'Relay');
+      const name = (channel.name || 'unknown').replace(/云驿/g, '云逸');
       const status = channel.status || 'idle';
       const windows = channel.windows || {};
       const trend = channel.trend || [];
@@ -506,7 +507,7 @@
 
     async function loadStatus() {
       try {
-        const res = await fetch('https://api.example.com/status');
+        const res = await fetch('https://yungyi.com/api/yunyi-status');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const channels = data.channels || [];
@@ -534,5 +535,3 @@
   </script>
 </body>
 </html>
-
-
