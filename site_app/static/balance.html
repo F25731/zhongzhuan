@@ -1,10 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
-  <title>云逸 | 余额查询</title>
+  <title>Relay | 余额查询</title>
   <style>
     :root {
       --bg: #0a0e1a;
@@ -312,7 +311,7 @@
 <body>
   <main class="shell">
     <div class="topbar">
-      <div class="brand"><img class="brand-logo" src="/static/assets/yunyi-logo.svg" alt="云逸"><span id="brandTitle">云逸余额查询</span></div>
+      <div class="brand"><span id="brandTitle">余额查询</span></div>
       <div class="navlinks">
         <a href="/">首页导入</a>
         <a href="/balance" class="active">余额查询</a>
@@ -322,7 +321,7 @@
     </div>
 
     <section class="panel">
-      <div class="kicker" id="heroKicker">云逸 · 卡密状态与额度</div>
+      <div class="kicker" id="heroKicker">Relay · 卡密状态与额度</div>
       <h1>查询卡密余额和到期时间</h1>
       <p class="lead">输入你的卡密即可查看剩余额度、已用额度、请求次数、Token 用量和到期时间。查询只用于本次请求，不会在本站保存卡密。</p>
 
@@ -365,7 +364,7 @@
   </main>
 
   <script>
-    const defaultSettings = { brandName: '云逸', siteDomain: 'yunyi.hstudy.xyz' };
+    const defaultSettings = { brandName: 'Relay', siteDomain: 'relay.example.com' };
     let siteSettings = { ...defaultSettings };
 
     function fmtNumber(value) {
@@ -497,3 +496,5 @@
   </script>
 </body>
 </html>
+
+

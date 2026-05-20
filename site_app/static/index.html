@@ -1,10 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="/static/assets/yunyi-logo.svg" type="image/svg+xml">
-  <title>云逸</title>
+  <title>Relay</title>
   <style>
     :root {
       --bg: #0a0e1a;
@@ -559,10 +558,10 @@
   <main class="shell">
     <div class="topbar">
       <div class="brand">
-        <img class="brand-logo" src="/static/assets/yunyi-logo.svg" alt="云逸">
+        
         <div>
-          <div id="brandName">云逸</div>
-          <small id="siteDomain">yunyi.hstudy.xyz</small>
+          <div id="brandName">Relay</div>
+          <small id="siteDomain">relay.example.com</small>
         </div>
       </div>
       <div class="navlinks">
@@ -580,7 +579,7 @@
 
     <div class="hero">
       <section class="intro">
-        <div class="kicker" id="heroKicker">云逸 Claude / Codex 通道</div>
+        <div class="kicker" id="heroKicker">Claude 通道 / Codex 通道</div>
         <h1>输入卡密，一键导入到 CC-Switch</h1>
         <p>支持 Claude 和 Codex 两类通道。导入后，客户端、VS Code 和终端 CLI 都可以直接使用，不需要手动填写复杂配置。</p>
         <div class="hero-points">
@@ -639,7 +638,7 @@
           <li>支持 Claude 和 Codex 两类通道</li>
           <li>导入完成后可在客户端、VS Code、终端里使用</li>
         </ul>
-        <a class="buy-button" id="buyButton" href="https://pay.ldxp.cn/shop/Q5L5OORI" target="_blank" rel="noopener">立即购买卡密</a>
+        <a class="buy-button" id="buyButton" href="https://example.com/buy" target="_blank" rel="noopener">立即购买卡密</a>
         <div class="ok">同时提供软件下载和教程页面，适合直接放到服务器上线。</div>
         <a class="link-button" id="downloadButton" href="#" style="display:none;background:var(--green);">下载 CC-Switch</a>
         <div class="download-options" id="downloadOptions"></div>
@@ -649,19 +648,19 @@
 
   <script>
     let siteSettings = {
-      brandName: '云逸',
-      siteDomain: 'yunyi.hstudy.xyz',
+      brandName: 'Relay',
+      siteDomain: 'relay.example.com',
       announcement: '导入前请先安装 CC-Switch。卡密会在你的浏览器本地生成导入链接并写入本机 CC-Switch；导入后如未生效，请在 CC-Switch 中手动激活对应通道。',
-      buyUrl: 'https://pay.ldxp.cn/shop/Q5L5OORI',
+      buyUrl: 'https://example.com/buy',
       downloadLabel: '下载 CC-Switch',
       downloadUrl: '',
       downloadPackages: {},
-      claudeName: '云逸Claude',
-      claudeEndpoint: 'https://yunyi.cfd/claude',
-      claudeHomepage: 'https://yunyi.cfd',
-      codexName: '云逸Codex',
-      codexEndpoint: 'https://yunyi.cfd/codex',
-      codexHomepage: 'https://yunyi.cfd'
+      claudeName: 'Claude 通道',
+      claudeEndpoint: 'https://api.example.com/claude',
+      claudeHomepage: 'https://api.example.com',
+      codexName: 'Codex 通道',
+      codexEndpoint: 'https://api.example.com/codex',
+      codexHomepage: 'https://api.example.com'
     };
 
     function encodeBase64Unicode(text) {
@@ -676,7 +675,7 @@
         const parsed = new URL(url);
         return `${parsed.protocol}//${parsed.host}`;
       } catch {
-        return 'https://yunyi.cfd';
+        return 'https://api.example.com';
       }
     }
 
@@ -718,7 +717,7 @@
     return {
       isValid: response.status === "active",
       invalidMessage: response.status === "active" ? "" : "卡密状态异常：" + response.status,
-      planName: response.sub_service_type_name || response.service_type || "云逸套餐",
+      planName: response.sub_service_type_name || response.service_type || "默认套餐",
       remaining: Number(remaining || 0),
       used: Number(used || 0),
       total: Number(total || 0),
@@ -832,3 +831,5 @@
   </script>
 </body>
 </html>
+
+

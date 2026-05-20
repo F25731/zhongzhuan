@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import json
@@ -35,7 +35,7 @@ ADMIN_USER = os.getenv("SITE_ADMIN_USER", "fyanxv")
 ADMIN_PASSWORD = os.getenv("SITE_ADMIN_PASSWORD", "change-me")
 DOWNLOAD_PLATFORMS = {"windows", "macos", "linux"}
 
-app = FastAPI(title="云逸中转站")
+app = FastAPI(title="中转分销站")
 security = HTTPBasic()
 
 app.add_middleware(
@@ -231,22 +231,22 @@ def ensure_download_package_record(settings: Dict[str, Any]) -> None:
 
 def default_site_settings() -> Dict[str, Any]:
     return {
-        "brandName": "云逸",
-        "siteDomain": "yunyi.hstudy.xyz",
+        "brandName": "Relay",
+        "siteDomain": "relay.example.com",
         "announcement": "导入前请先安装 CC-Switch。卡密会在浏览器本地生成导入链接并写入本机 CC-Switch；导入后如未生效，请在 CC-Switch 中手动激活对应通道。",
-        "buyUrl": "https://pay.ldxp.cn/shop/Q5L5OORI",
-        "balanceApiUrl": "https://yunyi.cfd/user/api/v1/me?view=dashboard",
-        "modelTrendsApiUrl": "https://yunyi.cfd/user/api/v1/usage/model-trends?period=24h",
-        "usageHistoryApiUrl": "https://yunyi.cfd/user/api/v1/usage/history?period=24h",
+        "buyUrl": "https://example.com/buy",
+        "balanceApiUrl": "https://api.example.com/user/api/v1/me?view=dashboard",
+        "modelTrendsApiUrl": "https://api.example.com/user/api/v1/usage/model-trends?period=24h",
+        "usageHistoryApiUrl": "https://api.example.com/user/api/v1/usage/history?period=24h",
         "downloadLabel": "下载 CC-Switch",
         "downloadFilename": "CC-Switch-v3.14.1-Windows_8.msi",
         "downloadUrl": "",
-        "claudeName": "云逸 Claude",
-        "claudeEndpoint": "https://yunyi.cfd/claude",
-        "claudeHomepage": "https://yunyi.cfd",
-        "codexName": "云逸 Codex",
-        "codexEndpoint": "https://yunyi.cfd/codex",
-        "codexHomepage": "https://yunyi.cfd",
+        "claudeName": "Claude 通道",
+        "claudeEndpoint": "https://api.example.com/claude",
+        "claudeHomepage": "https://api.example.com",
+        "codexName": "Codex 通道",
+        "codexEndpoint": "https://api.example.com/codex",
+        "codexHomepage": "https://api.example.com",
     }
 
 
@@ -530,7 +530,7 @@ async def api_balance(payload: Dict[str, Any]) -> Dict[str, Any]:
     headers = {
         "Accept": "application/json",
         "Authorization": f"Bearer {api_key}",
-        "User-Agent": "yunyi-site/1.0",
+        "User-Agent": "relay-site/1.0",
     }
     async with httpx.AsyncClient(timeout=12) as client:
         upstream = await get_upstream_with_retry(client, balance_api_url, headers, "balance")
@@ -692,3 +692,4 @@ async def api_admin_delete_download_package(package_id: int, _: str = Depends(re
     if target.exists() and target.is_file():
         target.unlink()
     return {"items": list_download_packages(), "active": active_download_packages()}
+
